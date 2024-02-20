@@ -4,8 +4,9 @@ use anyhow::anyhow;
 use yaml_rust::Yaml;
 use crate::err::GlobalResult;
 #[allow(dead_code)]
+#[cfg(feature = "db-mysql")]
 pub mod mysql;
-
+#[allow(dead_code)]
 pub const MYSQL: &str = "mysql";
 
 #[derive(Debug)]
@@ -18,7 +19,7 @@ pub struct DbModel {
     //暂时不使用
     pub connect_attrs: Option<HashMap<String, String>>,
 }
-
+#[allow(dead_code)]
 impl DbModel {
     //db_type  =  [redis,mysql]
     pub fn get_db_mode_by_type(vc: &Vec<Yaml>, db_type: &str) -> Option<DbModel> {
@@ -50,7 +51,7 @@ pub struct DbPoolModel {
     pub write_timeout: Option<Duration>,
     pub connection_timeout: Duration,
 }
-
+#[allow(dead_code)]
 impl DbPoolModel {
     //db_type  =  [redis,mysql]
     pub fn build_pool_model_by_type(vc: &Vec<Yaml>, db_type: &str) -> GlobalResult<DbPoolModel> {

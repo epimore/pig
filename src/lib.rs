@@ -29,6 +29,7 @@ impl Builder {
             enable_mysql: false,
         }
     }
+    #[cfg(feature = "db-mysql")]
     pub fn enable_mysql(mut self) -> Self {
         self.enable_mysql = true;
         db::mysql::init_mysql(&self.cfg);

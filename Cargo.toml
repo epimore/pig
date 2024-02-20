@@ -2,6 +2,8 @@
 name = "pig"
 version = "0.1.0"
 edition = "2021"
+[package.metadata.'rustc-flags']
+CFLAGS = "-A dead_code"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -23,3 +25,7 @@ hex-literal = "0.2.1"
 rand = "0.8.4"
 bytebuffer = "0.2.1"
 base64 = "0.13.0"
+
+[features]
+default = []
+db-mysql = []
