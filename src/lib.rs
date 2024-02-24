@@ -1,26 +1,27 @@
 use yaml_rust::Yaml;
 
 pub mod conf;
-mod err;
+pub mod err;
 mod log;
 mod db;
 mod utils;
+pub mod net;
 
 ///just build config info and log;
-pub fn init() {
-    let _ = Builder::new();
+pub fn init() -> Tripe {
+    Tripe::new()
 }
 
 #[derive(Debug)]
 #[allow(dead_code)]
-pub struct Builder {
+pub struct Tripe {
     cfg: Vec<Yaml>,
     logger: log::Logger,
     enable_mysql: bool,
 }
 
-impl Builder {
-    pub fn new() -> Self {
+impl Tripe {
+    fn new() -> Self {
         let vc = conf::make();
         let logger = log::Logger::init(&vc);
         Self {

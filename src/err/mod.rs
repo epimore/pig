@@ -1,4 +1,4 @@
-mod err_code;
+pub mod err_code;
 
 use std::error::Error;
 use std::fmt::{Display, Formatter};
