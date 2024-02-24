@@ -8,9 +8,6 @@ use log::{error, debug};
 use crate::err::{GlobalResult, TransError};
 use bytes::Bytes;
 use std::io::Error;
-use std::sync::Arc;
-use dashmap::DashMap;
-use once_cell::sync::Lazy;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 //创建tcp监听，并将监听句柄（内含读写句柄）发送出去
@@ -72,7 +69,7 @@ pub async fn read(mut reader: io::ReadHalf<TcpStream>, local_addr: SocketAddr, r
                             );
                     let bill = Bill::new(local_addr, remote_addr, Protocol::TCP);
                     let package = Package::new(bill, Bytes::copy_from_slice(&buf[..len]));
-                    let res = tx.send(package).await.hand_err(|msg| error!("{msg}"));
+                    let _ = tx.send(package).await.hand_err(|msg| error!("{msg}"));
                 } else {
                     debug!("【TCP connection disconnected】 【Local_addr = {}】 【Remote_addr = {}】",
                             local_addr.to_string(),
