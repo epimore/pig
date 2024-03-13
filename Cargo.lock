@@ -449,6 +449,7 @@ dependencies = [
  "bytes",
  "chrono",
  "clap",
+ "constructor",
  "dashmap",
  "fern",
  "hex-literal",
@@ -458,6 +459,15 @@ dependencies = [
  "thiserror",
  "tokio",
  "yaml-rust",
+]
+
+[[package]]
+name = "constructor"
+version = "0.2.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.52",
 ]
 
 [[package]]
@@ -658,6 +668,19 @@ checksum = "a258e46cdc063eb8519c00b9fc845fc47bcfca4130e2f08e88665ceda8474245"
 dependencies = [
  "libc",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "ezsql"
+version = "0.1.0"
+dependencies = [
+ "common",
+ "constructor",
+ "indexmap",
+ "mysql",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.52",
 ]
 
 [[package]]
@@ -891,7 +914,11 @@ name = "idb"
 version = "0.1.0"
 dependencies = [
  "common",
+ "constructor",
+ "ezsql",
+ "log",
  "mysql",
+ "serde",
 ]
 
 [[package]]

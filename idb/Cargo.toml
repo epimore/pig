@@ -4,7 +4,12 @@ version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[dev-dependencies]
+ezsql = {path = "../../macros/ezsql"}
+constructor = {path = "../../macros/constructor"}
 
 [dependencies]
 mysql = "24.0"
 common = {path = "../common"}
+serde = "1.0"
+log = "0.4.20"

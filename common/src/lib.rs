@@ -17,14 +17,14 @@ pub use clap;
 pub use chrono;
 pub use once_cell;
 pub use rand;
-
+use constructor::Get;
 
 ///just build config info and log;
 pub fn init() -> Tripe {
     Tripe::new()
 }
 
-#[derive(Debug)]
+#[derive(Debug, Get)]
 #[allow(dead_code)]
 pub struct Tripe {
     cfg: Vec<yaml_rust::Yaml>,

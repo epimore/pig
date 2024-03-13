@@ -95,7 +95,7 @@ pub async fn read(mut reader: io::ReadHalf<TcpStream>, local_addr: SocketAddr, r
         }
     }
 }
-
+//todo shutdown
 pub async fn write(mut writer: io::WriteHalf<TcpStream>, mut rx: Receiver<Package>) {
     while let Some(package) = rx.recv().await {
         let bytes = package.data;
