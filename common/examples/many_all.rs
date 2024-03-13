@@ -1,15 +1,15 @@
-use pig::net;
+use common::net;
 use std::net::SocketAddr;
 use std::str::FromStr;
 use bytes::Bytes;
 use log::error;
-use pig::err::TransError;
-use pig::net::shard::Bill;
+use common::err::TransError;
+use common::net::shard::Bill;
 
 //cmd: cargo run --example many_all --features net
 #[tokio::main]
 async fn main() {
-    let _tripe = pig::init();
+    let _tripe = common::init();
     let (tx, mut rx) = net::init_net(net::shard::Protocol::ALL, SocketAddr::from_str("0.0.0.0:18888").unwrap()).await.unwrap();
     let (tx1, mut rx1) = net::init_net(net::shard::Protocol::ALL, SocketAddr::from_str("0.0.0.0:18889").unwrap()).await.unwrap();
     tokio::spawn(async move{

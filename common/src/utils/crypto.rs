@@ -60,8 +60,6 @@ fn t1() {
 #[test]
 fn t2() {
     let plaintext = "Ms@2023%Kht";
-    // let plaintext = "Kz986542.";
-    // let plaintext = "sg*n2021";
     let enc = default_encrypt(plaintext).unwrap();
     let dec = default_decrypt(&enc).unwrap();
     println!("dec = {},enc = {}", dec, enc);

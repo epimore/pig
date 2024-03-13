@@ -1,0 +1,7 @@
+log:
+  level: debug
+  suffix: server
+  store_path: ./logs
+
+
+

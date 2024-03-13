@@ -10,7 +10,7 @@ mod udp;
 mod tcp;
 mod core;
 pub mod shard;
-
+///todo 主动断开清理连接;创建事件句柄?封装数据枚举：EVENT-DATA
 // static RUNTIME: Lazy<Runtime> = Lazy::new(|| {
 //     tokio::runtime::Builder::new_multi_thread()
 //         .thread_name_fn(|| {
