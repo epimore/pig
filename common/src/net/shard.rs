@@ -5,69 +5,101 @@ use dashmap::DashMap;
 use once_cell::sync::Lazy;
 use tokio::net::{TcpListener, TcpStream, UdpSocket};
 use tokio::sync::mpsc::{Sender, Receiver};
+use constructor::{Get, New, Set};
 
 
 //TCP连接有状态，需要持有每个连接的句柄
-pub static TCP_HANDLE_MAP: Lazy<Arc<DashMap<Bill, Sender<Package>>>> = Lazy::new(|| {
+pub static TCP_HANDLE_MAP: Lazy<Arc<DashMap<Bill, Sender<Zip>>>> = Lazy::new(|| {
     Arc::new(DashMap::new())
 });
 pub const SOCKET_BUFFER_SIZE: usize = 4096;
 pub const CHANNEL_BUFFER_SIZE: usize = 10000;
 
-#[derive(Debug, Eq, Hash, PartialEq)]
+#[derive(Debug, Eq, Hash, PartialEq, Clone)]
 pub enum Protocol {
     UDP,
     TCP,
     ALL,
 }
 
-#[derive(Debug, Eq, Hash, PartialEq)]
+#[derive(Debug, Eq, Hash, PartialEq, New, Set, Get, Clone)]
 pub struct Bill {
-    pub to: SocketAddr,
-    pub from: SocketAddr,
-    pub protocol: Protocol,
+    to: SocketAddr,
+    from: SocketAddr,
+    protocol: Protocol,
 }
 
-impl Bill {
-    pub fn new(to: SocketAddr, from: SocketAddr, protocol: Protocol) -> Self {
-        Self { to, from, protocol }
+// impl Bill {
+//     pub fn new(to: SocketAddr, from: SocketAddr, protocol: Protocol) -> Self {
+//         Self { to, from, protocol }
+//     }
+// }
+
+///EVENT:
+/// 0-TCP链接断开；input->对端断开连接；output->主动断开连接
+#[derive(Debug)]
+pub enum Zip {
+    Data(Package),
+    Event(Event),
+}
+
+impl Zip {
+    pub fn build_data(package: Package) -> Self {
+        Self::Data(package)
+    }
+
+    pub fn build_event(event: Event) -> Self {
+        Self::Event(event)
+    }
+
+    pub fn get_bill(&self) -> Bill {
+        match &self {
+            Zip::Data(Package { bill, .. }) => { bill.clone() }
+            Zip::Event(Event { bill, .. }) => { bill.clone() }
+        }
+    }
+
+    pub fn get_bill_protocol(&self) -> &Protocol {
+        match self {
+            Zip::Data(Package { bill: Bill { protocol, .. }, .. }) => { protocol }
+            Zip::Event(Event { bill: Bill { protocol, .. }, .. }) => { protocol }
+        }
     }
 }
 
+#[derive(Debug, New, Set, Get)]
+pub struct Event {
+    bill: Bill,
+    type_code: u8,
+}
 
-#[derive(Debug)]
+#[derive(Debug, New, Set, Get)]
 pub struct Package {
-    pub bill: Bill,
-    pub data: Bytes,
+    bill: Bill,
+    data: Bytes,
 }
 
-impl Package {
-    pub fn new(bill: Bill, data: Bytes) -> Self {
-        Self { bill, data }
-    }
-}
+// impl Package {
+//     pub fn new(bill: Bill, data: Bytes) -> Self {
+//         Self { bill, data }
+//     }
+// }
 
-#[derive(Debug)]
+#[derive(Debug, New, Set, Get)]
 pub struct Gate {
     //监听地址
-    pub local_addr: SocketAddr,
+    local_addr: SocketAddr,
     //从socket读取数据向程序发送
-    pub intput: Sender<Package>,
+    intput: Sender<Zip>,
     //从程序中接收数据向socket写入
-    pub output: Receiver<Package>,
+    output: Receiver<Zip>,
 }
 
 impl Gate {
-    pub fn new(local_addr: SocketAddr, intput: Sender<Package>, output: Receiver<Package>) -> Self {
-        Self { local_addr, intput, output }
+    pub fn get_owned_output(self) -> Receiver<Zip> {
+        self.output
     }
 }
-
-// #[derive(Debug)]
-// pub struct Listenner {
-//     local_addr: SocketAddr,
-//     protocol: Protocol,
-// }
 
 #[derive(Debug)]
 pub enum GateListener {

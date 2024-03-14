@@ -4,7 +4,7 @@ use log::error;
 use tokio::sync::mpsc::{Receiver, Sender};
 
 use crate::err::{GlobalResult, TransError};
-use crate::net::shard::Package;
+use crate::net::shard::Zip;
 
 mod udp;
 mod tcp;
@@ -25,11 +25,11 @@ pub mod shard;
 
 
 #[cfg(feature = "net")]
-pub async fn init_net(protocol: shard::Protocol, socket_addr: SocketAddr) -> GlobalResult<(Sender<Package>, Receiver<Package>)> {
+pub async fn init_net(protocol: shard::Protocol, socket_addr: SocketAddr) -> GlobalResult<(Sender<Zip>, Receiver<Zip>)> {
     net_run(protocol, socket_addr).await
 }
 
-async fn net_run(protocol: shard::Protocol, socket_addr: SocketAddr) -> GlobalResult<(Sender<Package>, Receiver<Package>)> {
+async fn net_run(protocol: shard::Protocol, socket_addr: SocketAddr) -> GlobalResult<(Sender<Zip>, Receiver<Zip>)> {
     let (listen_tx, listen_rx) = tokio::sync::mpsc::channel(shard::CHANNEL_BUFFER_SIZE);
     let rw = core::listen(protocol, socket_addr, listen_tx).await?;
     let (accept_tx, accept_rx) = tokio::sync::mpsc::channel(shard::CHANNEL_BUFFER_SIZE);

@@ -1,7 +1,7 @@
 use tokio::sync::mpsc::{Sender, Receiver};
-use log::{debug, error, warn};
+use log::{debug, error, info, warn};
 use crate::err::{GlobalResult, TransError};
-use crate::net::shard::{Package, Gate, GateListener, GateAccept, SOCKET_BUFFER_SIZE, Bill, Protocol};
+use crate::net::shard::{Zip, Gate, GateListener, GateAccept, SOCKET_BUFFER_SIZE, Bill, Protocol, Package};
 use tokio::net::UdpSocket;
 use std::net::SocketAddr;
 use bytes::Bytes;
@@ -9,7 +9,7 @@ use tokio::io;
 
 //监听，将socket句柄发送出去
 pub async fn listen(gate: Gate, tx: Sender<GateListener>) -> GlobalResult<()> {
-    let local_addr = gate.local_addr;
+    let local_addr = gate.get_local_addr().clone();
     let socket = UdpSocket::bind(local_addr).await.hand_err(|msg| error!("{msg}"))?;
     let gate_listener = GateListener::build_udp(gate, socket);
     tx.send(gate_listener).await.hand_err(|msg| error!("{msg}"))?;
@@ -24,7 +24,7 @@ pub async fn accept(gate: Gate, udp_socket: UdpSocket, accept_tx: Sender<GateAcc
     Ok(())
 }
 
-pub async fn read(local_addr: SocketAddr, udp_socket: &UdpSocket, tx: Sender<Package>) {
+pub async fn read(local_addr: SocketAddr, udp_socket: &UdpSocket, tx: Sender<Zip>) {
     loop {
         let _ = udp_socket.readable().await;
         let mut buf = [0u8; SOCKET_BUFFER_SIZE];
@@ -37,8 +37,8 @@ pub async fn read(local_addr: SocketAddr, udp_socket: &UdpSocket, tx: Sender<Pac
                             len
                             );
                     let bill = Bill::new(local_addr, remote_addr, Protocol::UDP);
-                    let package = Package::new(bill, Bytes::copy_from_slice(&buf[..len]));
-                    let _ = tx.send(package).await.hand_err(|msg| error!("{msg}"));
+                    let zip = Zip::build_data(Package::new(bill, Bytes::copy_from_slice(&buf[..len])));
+                    let _ = tx.send(zip).await.hand_err(|msg| error!("{msg}"));
                 }
             }
 
@@ -56,31 +56,36 @@ pub async fn read(local_addr: SocketAddr, udp_socket: &UdpSocket, tx: Sender<Pac
     }
 }
 
-pub async fn write(udp_socket: &UdpSocket, mut rx: Receiver<Package>) {
-    while let Some(package) = rx.recv().await {
+pub async fn write(udp_socket: &UdpSocket,mut rx: Receiver<Zip>) {
+    while let Some(zip) = rx.recv().await {
         let _ = udp_socket.writable().await;
-        let bytes = package.data;
-        let local_addr = &package.bill.from.to_string();
-        let remote_addr = &package.bill.to.to_string();
-        match udp_socket.try_send_to(&*bytes, package.bill.to) {
-            Ok(len) => {
-                debug!("【UDP write success】 【Local_addr = {}】 【Remote_addr = {}】 【len = {}】",
+        match zip {
+            Zip::Data(package) => {
+                let bytes = package.get_data();
+                let local_addr = package.get_bill().get_from();
+                let remote_addr = package.get_bill().get_to();
+                match udp_socket.try_send_to(&*bytes, *package.get_bill().get_to()) {
+                    Ok(len) => {
+                        debug!("【UDP write success】 【Local_addr = {:?}】 【Remote_addr = {:?}】 【len = {}】",
                             local_addr,
                             remote_addr,
                             len
                             );
-            }
-            Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
-                continue;
-            }
-            Err(err) => {
-                error!("【UDP write failure】 【Local_addr = {}】 【Remote_addr = {}】 【err = {:?}】",
+                    }
+                    Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
+                        continue;
+                    }
+                    Err(err) => {
+                        error!("【UDP write failure】 【Local_addr = {:?}】 【Remote_addr = {:?}】 【err = {:?}】",
                             local_addr,
                             remote_addr,
                             err
                             );
-                break;
+                        break;
+                    }
+                }
             }
+            Zip::Event(_event) => { info!("UDP Events are not supported") }
         }
     }
 }

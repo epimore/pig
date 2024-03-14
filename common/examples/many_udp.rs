@@ -4,6 +4,7 @@ use std::str::FromStr;
 use bytes::Bytes;
 use log::error;
 use common::err::TransError;
+use common::net::shard::Zip;
 
 //cmd: cargo run --example many_udp --features net
 #[tokio::main]
@@ -15,40 +16,58 @@ async fn main() {
     let mut i = 0;
     tokio::spawn(
         async move {
-            while let Some(mut package) = rx1.recv().await {
-                println!("bill = {:?} - data_size: {}", package.bill, package.data.len());
-                i += 1;
-                let tmp = package.bill.to;
-                package.bill.to=package.bill.from;
-                package.bill.from=tmp;
-                package.data = Bytes::from(format!("abc - {}", i));
-                println!("{:?}",&package);
-                let _ = tx1.clone().send(package).await.hand_err(|msg|error!("{msg}"));
+            while let Some(zip) = rx1.recv().await {
+                match zip {
+                    Zip::Data(mut package) => {
+                        println!("bill = {:?} - data_size: {}", package.get_bill(), package.get_data().len());
+                        i += 1;
+                        let mut bill = package.get_bill().clone();
+                        bill.set_to(package.get_bill().get_from().clone());
+                        bill.set_from(package.get_bill().get_to().clone());
+                        package.set_bill(bill);
+                        package.set_data(Bytes::from(format!("abc - {}", i)));
+                        println!("{:?}", &package);
+                        let _ = tx1.clone().send(Zip::build_data(package)).await.hand_err(|msg| error!("{msg}"));
+                    }
+                    Zip::Event(_) => {}
+                }
             }
         }
     );
     tokio::spawn(
         async move {
-            while let Some(mut package) = rx2.recv().await {
-                println!("bill = {:?} - data_size: {}", package.bill, package.data.len());
-                i += 1;
-                let tmp = package.bill.to;
-                package.bill.to=package.bill.from;
-                package.bill.from=tmp;
-                package.data = Bytes::from(format!("abc - {}", i));
-                println!("{:?}",&package);
-                let _ = tx2.clone().send(package).await.hand_err(|msg|error!("{msg}"));
+            while let Some(zip) = rx2.recv().await {
+                match zip {
+                    Zip::Data(mut package) => {
+                        println!("bill = {:?} - data_size: {}", package.get_bill(), package.get_data().len());
+                        i += 1;
+                        let mut bill = package.get_bill().clone();
+                        bill.set_to(package.get_bill().get_from().clone());
+                        bill.set_from(package.get_bill().get_to().clone());
+                        package.set_bill(bill);
+                        package.set_data(Bytes::from(format!("abc - {}", i)));
+                        println!("{:?}", &package);
+                        let _ = tx2.clone().send(Zip::build_data(package)).await.hand_err(|msg| error!("{msg}"));
+                    }
+                    Zip::Event(_) => {}
+                }
             }
         }
     );
-    while let Some(mut package) = rx3.recv().await {
-        println!("bill = {:?} - data_size: {}", package.bill, package.data.len());
-        i += 1;
-        let tmp = package.bill.to;
-        package.bill.to=package.bill.from;
-        package.bill.from=tmp;
-        package.data = Bytes::from(format!("abc - {}", i));
-        println!("{:?}",&package);
-        let _ = tx3.clone().send(package).await.hand_err(|msg|error!("{msg}"));
+    while let Some(zip) = rx3.recv().await {
+        match zip {
+            Zip::Data(mut package) => {
+                println!("bill = {:?} - data_size: {}", package.get_bill(), package.get_data().len());
+                i += 1;
+                let mut bill = package.get_bill().clone();
+                bill.set_to(package.get_bill().get_from().clone());
+                bill.set_from(package.get_bill().get_to().clone());
+                package.set_bill(bill);
+                package.set_data(Bytes::from(format!("abc - {}", i)));
+                println!("{:?}", &package);
+                let _ = tx3.clone().send(Zip::build_data(package)).await.hand_err(|msg| error!("{msg}"));
+            }
+            Zip::Event(_) => {}
+        }
     }
 }
