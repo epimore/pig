@@ -79,11 +79,11 @@ pub struct Package {
     data: Bytes,
 }
 
-// impl Package {
-//     pub fn new(bill: Bill, data: Bytes) -> Self {
-//         Self { bill, data }
-//     }
-// }
+impl Package {
+    pub fn get_owned_data(self) -> Bytes {
+        self.data
+    }
+}
 
 #[derive(Debug, New, Set, Get)]
 pub struct Gate {

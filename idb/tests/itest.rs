@@ -24,6 +24,7 @@ struct GmvOauth {
     pwd_check: u8,
     alias: Option<String>,
     status: u8,
+    heartbeat_sec: u8,
 }
 
 #[test]
@@ -42,18 +43,18 @@ fn test() {
     };
     GmvOauth::add_gmv_oauth_by_batch(vec, &mut conn);
 
-    GmvOauth::delete_gmv_oauth(&mut conn, format!("batch_device_id_{}", 1), format!("batch_domain_id_{}", 1));
+    GmvOauth::delete_gmv_oauth(&mut conn, &format!("batch_device_id_{}", 1), &format!("batch_domain_id_{}", 1));
 
     let mut update_oauth = GmvOauth::default();
     update_oauth.set_pwd(Some("123aaa".to_string()));
-    update_oauth.update_gmv_oauth_pwd(&mut conn, format!("batch_device_id_{}", 2), format!("batch_domain_id_{}", 2));
+    update_oauth.update_gmv_oauth_pwd(&mut conn, &format!("batch_device_id_{}", 2), &format!("batch_domain_id_{}", 2));
 
-    let all = GmvOauth::read_gmv_oauth_single_all(&mut conn, format!("batch_device_id_{}", 2), format!("batch_domain_id_{}", 2));
+    let all = GmvOauth::read_gmv_oauth_single_all(&mut conn, &format!("batch_device_id_{}", 2), &format!("batch_domain_id_{}", 2));
     log::info!("{all:?}");
-    let pwd: Option<String> = GmvOauth::read_gmv_oauth_single_pwd(&mut conn, format!("batch_device_id_{}", 2), format!("batch_domain_id_{}", 2))
+    let pwd: Option<String> = GmvOauth::read_gmv_oauth_single_pwd(&mut conn, &format!("batch_device_id_{}", 2), &format!("batch_domain_id_{}", 2))
         .hand_err(|msg| error!("{msg}")).unwrap();
     log::info!("{pwd:?}");
 
-    let page_limit = GmvOauth::read_gmv_oauth_batch_status(&mut conn, 0, 0, 5);
+    let page_limit = GmvOauth::read_gmv_oauth_batch_status(&mut conn, &0, 0, 5);
     log::info!("{page_limit:?}");
 }

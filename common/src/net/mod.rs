@@ -4,12 +4,13 @@ use log::error;
 use tokio::sync::mpsc::{Receiver, Sender};
 
 use crate::err::{GlobalResult, TransError};
-use crate::net::shard::Zip;
+use crate::net::shard::{Bill, Zip};
 
 mod udp;
 mod tcp;
 mod core;
 pub mod shard;
+
 ///todo 主动断开清理连接;创建事件句柄?封装数据枚举：EVENT-DATA
 // static RUNTIME: Lazy<Runtime> = Lazy::new(|| {
 //     tokio::runtime::Builder::new_multi_thread()
@@ -22,7 +23,10 @@ pub mod shard;
 //         .build()
 //         .hand_err(|msg| error!("net-pool Runtime build failed {msg}")).unwrap()
 // });
-
+#[cfg(feature = "net")]
+pub fn udp_turn_bill(bill: &Bill) -> Bill {
+    Bill::new(bill.get_from().clone(), bill.get_to().clone(), bill.get_protocol().clone())
+}
 
 #[cfg(feature = "net")]
 pub async fn init_net(protocol: shard::Protocol, socket_addr: SocketAddr) -> GlobalResult<(Sender<Zip>, Receiver<Zip>)> {
