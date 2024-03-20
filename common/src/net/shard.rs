@@ -14,11 +14,10 @@ pub static TCP_HANDLE_MAP: Lazy<Arc<DashMap<Bill, Sender<Zip>>>> = Lazy::new(|| 
 });
 pub const SOCKET_BUFFER_SIZE: usize = 4096;
 pub const CHANNEL_BUFFER_SIZE: usize = 10000;
+pub const UDP: &str = "UDP";
+pub const TCP: &str = "TCP";
+pub const ALL: &str = "ALL";
 
-// impl Bill {
-//     pub fn new(to: SocketAddr, from: SocketAddr, protocol: Protocol) -> Self {
-//         Self { to, from, protocol }
-//     }
 ///type_code = 0 为连接断开
 #[derive(Debug, New, Set, Get)]
 pub struct Event {
@@ -33,14 +32,22 @@ pub enum Protocol {
     ALL,
 }
 
+impl Protocol {
+    pub fn get_value(&self) -> &str {
+        match self {
+            Protocol::UDP => { UDP }
+            Protocol::TCP => { TCP }
+            Protocol::ALL => { ALL }
+        }
+    }
+}
+
 #[derive(Debug, Eq, Hash, PartialEq, New, Set, Get, Clone)]
 pub struct Bill {
     to: SocketAddr,
     from: SocketAddr,
     protocol: Protocol,
 }
-
-// }
 
 ///EVENT:
 /// 0-TCP链接断开；input->对端断开连接；output->主动断开连接
