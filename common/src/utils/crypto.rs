@@ -63,4 +63,5 @@ fn t2() {
     let enc = default_encrypt(plaintext).unwrap();
     let dec = default_decrypt(&enc).unwrap();
     println!("dec = {},enc = {}", dec, enc);
+    println!("{}",default_decrypt("Zncyb25BdWFZQkhxZ3JHST/4t3MN5NMWNZT3HVjNxRY=").unwrap());
 }

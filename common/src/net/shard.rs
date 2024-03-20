@@ -15,6 +15,17 @@ pub static TCP_HANDLE_MAP: Lazy<Arc<DashMap<Bill, Sender<Zip>>>> = Lazy::new(|| 
 pub const SOCKET_BUFFER_SIZE: usize = 4096;
 pub const CHANNEL_BUFFER_SIZE: usize = 10000;
 
+// impl Bill {
+//     pub fn new(to: SocketAddr, from: SocketAddr, protocol: Protocol) -> Self {
+//         Self { to, from, protocol }
+//     }
+///type_code = 0 为连接断开
+#[derive(Debug, New, Set, Get)]
+pub struct Event {
+    bill: Bill,
+    type_code: u8,
+}
+
 #[derive(Debug, Eq, Hash, PartialEq, Clone)]
 pub enum Protocol {
     UDP,
@@ -29,10 +40,6 @@ pub struct Bill {
     protocol: Protocol,
 }
 
-// impl Bill {
-//     pub fn new(to: SocketAddr, from: SocketAddr, protocol: Protocol) -> Self {
-//         Self { to, from, protocol }
-//     }
 // }
 
 ///EVENT:
@@ -65,12 +72,6 @@ impl Zip {
             Zip::Event(Event { bill: Bill { protocol, .. }, .. }) => { protocol }
         }
     }
-}
-
-#[derive(Debug, New, Set, Get)]
-pub struct Event {
-    bill: Bill,
-    type_code: u8,
 }
 
 #[derive(Debug, New, Set, Get)]
