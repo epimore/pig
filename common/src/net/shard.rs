@@ -54,6 +54,7 @@ pub struct Bill {
 #[derive(Debug)]
 pub enum Zip {
     Data(Package),
+    //网络事件
     Event(Event),
 }
 

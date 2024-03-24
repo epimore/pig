@@ -1,14 +1,22 @@
 use std::fs::File;
 use std::io::Read;
+use std::sync::Arc;
 use anyhow::anyhow;
 use clap::{Arg, Command};
 use log::error;
+use once_cell::sync::Lazy;
 use yaml_rust::{Yaml, YamlLoader};
 use crate::err::{GlobalError, TransError};
 
+static CONF: Lazy<Arc<Vec<Yaml>>> = Lazy::new(|| Arc::new(make()));
 
-pub fn make() -> Vec<Yaml> {
+pub fn get_config() -> Arc<Vec<Yaml>> {
+    CONF.clone()
+}
+
+fn make() -> Vec<Yaml> {
     let path = get_conf_path();
+    // let path = "/home/ubuntu20/code/rs/mv/github/epimore/gmv/config.yml".to_string();
     let mut file = File::open(path).hand_err(|msg| error!("{msg}")).unwrap();
     let mut conf = String::new();
     file.read_to_string(&mut conf).hand_err(|msg| error!("{msg}")).unwrap();
