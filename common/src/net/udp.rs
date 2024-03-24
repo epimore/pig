@@ -64,7 +64,8 @@ pub async fn write(udp_socket: &UdpSocket,mut rx: Receiver<Zip>) {
                 let bytes = package.get_data();
                 let local_addr = package.get_bill().get_from();
                 let remote_addr = package.get_bill().get_to();
-                match udp_socket.try_send_to(&*bytes, *package.get_bill().get_to()) {
+                //统一转换from -> to
+                match udp_socket.try_send_to(&*bytes, *package.get_bill().get_from()) {
                     Ok(len) => {
                         debug!("【UDP write success】 【Local_addr = {:?}】 【Remote_addr = {:?}】 【len = {}】",
                             local_addr,

@@ -23,10 +23,6 @@ pub mod shard;
 //         .build()
 //         .hand_err(|msg| error!("net-pool Runtime build failed {msg}")).unwrap()
 // });
-#[cfg(feature = "net")]
-pub fn udp_turn_bill(bill: &Bill) -> Bill {
-    Bill::new(bill.get_from().clone(), bill.get_to().clone(), bill.get_protocol().clone())
-}
 
 #[cfg(feature = "net")]
 pub async fn init_net(protocol: shard::Protocol, socket_addr: SocketAddr) -> GlobalResult<(Sender<Zip>, Receiver<Zip>)> {
