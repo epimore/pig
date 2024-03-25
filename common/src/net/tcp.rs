@@ -104,8 +104,8 @@ pub async fn write(mut writer: io::WriteHalf<TcpStream>,mut rx: Receiver<Zip>) {
         match zip {
             Zip::Data(package) => {
                 let bytes = package.get_data();
-                let local_addr = package.get_bill().get_from();
-                let remote_addr = package.get_bill().get_to();
+                let local_addr = package.get_bill().get_local_addr();
+                let remote_addr = package.get_bill().get_remote_addr();
                 match writer.write(&*bytes).await {
                     Ok(len) => {
                         debug!("【TCP write success】 【Local_addr = {:?}】 【Remote_addr = {:?}】 【len = {}】",

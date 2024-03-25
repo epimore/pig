@@ -44,8 +44,8 @@ impl Protocol {
 
 #[derive(Debug, Eq, Hash, PartialEq, New, Set, Get, Clone)]
 pub struct Bill {
-    to: SocketAddr,
-    from: SocketAddr,
+    local_addr: SocketAddr,
+    remote_addr: SocketAddr,
     protocol: Protocol,
 }
 

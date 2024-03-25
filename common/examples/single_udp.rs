@@ -17,10 +17,6 @@ async fn main() {
             Zip::Data(mut package) => {
                 println!("bill = {:?} - data_size: {}", package.get_bill(), package.get_data().len());
                 i += 1;
-                let mut bill = package.get_bill().clone();
-                bill.set_to(package.get_bill().get_from().clone());
-                bill.set_from(package.get_bill().get_to().clone());
-                package.set_bill(bill);
                 package.set_data(Bytes::from(format!("abc - {}", i)));
                 println!("{:?}", &package);
                 let _ = tx.clone().send(Zip::build_data(package)).await.hand_err(|msg| error!("{msg}"));

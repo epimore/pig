@@ -4,7 +4,7 @@ use log::error;
 use tokio::sync::mpsc::{Receiver, Sender};
 
 use crate::err::{GlobalResult, TransError};
-use crate::net::shard::{Bill, Zip};
+use crate::net::shard::{Zip};
 
 mod udp;
 mod tcp;

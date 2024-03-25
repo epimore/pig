@@ -18,12 +18,6 @@ async fn main() {
             match zip {
                 Zip::Data(mut package) => {
                     println!("bill = {:?} - data_size: {}", package.get_bill(), package.get_data().len());
-                    if package.get_bill().get_protocol().eq(&net::shard::Protocol::UDP) {
-                        let mut bill = package.get_bill().clone();
-                        bill.set_to(package.get_bill().get_from().clone());
-                        bill.set_from(package.get_bill().get_to().clone());
-                        package.set_bill(bill);
-                    }
                     i += 1;
                     package.set_data(Bytes::from(format!("abc - {}", i)));
                     println!("{:?}",&package);
@@ -39,12 +33,6 @@ async fn main() {
         match zip {
             Zip::Data(mut package) => {
                 println!("bill = {:?} - data_size: {}", package.get_bill(), package.get_data().len());
-                if package.get_bill().get_protocol().eq(&net::shard::Protocol::UDP) {
-                    let mut bill = package.get_bill().clone();
-                    bill.set_to(package.get_bill().get_from().clone());
-                    bill.set_from(package.get_bill().get_to().clone());
-                    package.set_bill(bill);
-                }
                 i += 1;
                 package.set_data(Bytes::from(format!("abc - {}", i)));
                 println!("{:?}",&package);
