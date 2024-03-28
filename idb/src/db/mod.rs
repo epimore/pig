@@ -20,8 +20,7 @@ pub struct DbModel {
 #[allow(dead_code)]
 impl DbModel {
     //db_type  =  [redis,mysql]
-    pub fn get_db_mode_by_type(vc: &Vec<Yaml>, db_type: &str) -> Option<DbModel> {
-        let cfg = &vc[0];
+    pub fn get_db_mode_by_type(cfg: &Yaml, db_type: &str) -> Option<DbModel> {
         if !cfg.is_badvalue() && !cfg["db"].is_badvalue() {
             let dbs = &cfg["db"];
             let dbi = &dbs[db_type];
@@ -52,8 +51,7 @@ pub struct DbPoolModel {
 #[allow(dead_code)]
 impl DbPoolModel {
     //db_type  =  [redis,mysql]
-    pub fn build_pool_model_by_type(vc: &Vec<Yaml>, db_type: &str) -> GlobalResult<DbPoolModel> {
-        let cfg = &vc[0];
+    pub fn build_pool_model_by_type(cfg: &Yaml, db_type: &str) -> GlobalResult<DbPoolModel> {
         if !cfg.is_badvalue() && !cfg["db"].is_badvalue() {
             let dbs = &cfg["db"];
             let dbi = &dbs[db_type];

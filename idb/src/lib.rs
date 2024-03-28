@@ -4,8 +4,8 @@ use common::err::GlobalResult;
 
 mod db;
 
-pub fn init_mysql(vc: &Vec<Yaml>) {
-    db::imysql::init_mysql(vc);
+pub fn init_mysql(cfg: &Yaml) {
+    db::imysql::init_mysql(cfg);
 }
 
 pub fn get_mysql_conn() -> GlobalResult<PooledConn> {

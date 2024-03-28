@@ -13,15 +13,15 @@ pub fn get_mysql_conn() -> GlobalResult<PooledConn> {
     Ok(res)
 }
 
-pub fn init_mysql(vc: &Vec<Yaml>) {
-    let pool = build_pool(vc).expect("MySQL initialization failed");
+pub fn init_mysql(cfg: &Yaml) {
+    let pool = build_pool(cfg).expect("MySQL initialization failed");
     unsafe { POOL = Some(pool) };
 }
 
-fn build_pool(vc: &Vec<Yaml>) -> GlobalResult<Pool> {
-    let db = DbModel::get_db_mode_by_type(vc, MYSQL).ok_or(GlobalError::SysErr(anyhow!("miss config path")))
+fn build_pool(cfg: &Yaml) -> GlobalResult<Pool> {
+    let db = DbModel::get_db_mode_by_type(cfg, MYSQL).ok_or(GlobalError::SysErr(anyhow!("miss config path")))
         .hand_err(|msg| error!("{msg}"))?;
-    let pm = DbPoolModel::build_pool_model_by_type(vc, MYSQL)?;
+    let pm = DbPoolModel::build_pool_model_by_type(cfg, MYSQL)?;
     let pool_opts = PoolConstraints::new(pm.min_size, pm.max_size)
         .map(
             |pc|

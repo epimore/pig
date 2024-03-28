@@ -30,7 +30,7 @@ struct GmvOauth {
 #[test]
 fn test() {
     let tripe = common::init();
-    idb::init_mysql(tripe.get_cfg());
+    idb::init_mysql(tripe.get_cfg().get(0).unwrap());
     let mut conn = idb::get_mysql_conn().unwrap();
 
     let gmv_oauth = GmvOauth::new("device_id_1".to_string(), "domain_id_1".to_string(), "domain_1".to_string());
