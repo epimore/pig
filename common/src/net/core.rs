@@ -1,7 +1,7 @@
 use std::net::SocketAddr;
 use std::sync::{Arc};
 use tokio::{io};
-use crate::net::shard::{Zip, Gate, GateListener, GateAccept, Protocol, CHANNEL_BUFFER_SIZE, TCP_HANDLE_MAP};
+use crate::net::shared::{Zip, Gate, GateListener, GateAccept, Protocol, CHANNEL_BUFFER_SIZE, TCP_HANDLE_MAP};
 use crate::net::{tcp, udp};
 use log::{error, warn};
 use crate::err::{GlobalResult, TransError};

@@ -3,7 +3,7 @@ use std::time::Duration;
 use tokio::sync::mpsc::{Receiver, Sender};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::{io, time};
-use crate::net::shard::{Zip, Gate, GateListener, GateAccept, SOCKET_BUFFER_SIZE, Bill, Protocol, TCP_HANDLE_MAP, Package, Event};
+use crate::net::shared::{Zip, Gate, GateListener, GateAccept, SOCKET_BUFFER_SIZE, Bill, Protocol, TCP_HANDLE_MAP, Package, Event};
 use log::{error, debug};
 use crate::err::{GlobalResult, TransError};
 use bytes::Bytes;
