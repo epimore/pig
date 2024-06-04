@@ -9,7 +9,7 @@ use super::*;
 static mut POOL: Option<Pool> = Option::<Pool>::None;
 
 pub fn get_mysql_conn() -> GlobalResult<PooledConn> {
-    let res = unsafe { POOL.clone().ok_or(anyhow!("Mysql is not initialized"))?.get_conn().hand_err(|msg| { error!("{msg}") })? };
+    let res = unsafe { POOL.clone().ok_or(anyhow!("Mysql is not initialized"))?.get_conn().hand_log(|msg| { error!("{msg}") })? };
     Ok(res)
 }
 
@@ -20,7 +20,7 @@ pub fn init_mysql(cfg: &Yaml) {
 
 fn build_pool(cfg: &Yaml) -> GlobalResult<Pool> {
     let db = DbModel::get_db_mode_by_type(cfg, MYSQL).ok_or(GlobalError::SysErr(anyhow!("miss config path")))
-        .hand_err(|msg| error!("{msg}"))?;
+        .hand_log(|msg| error!("{msg}"))?;
     let pm = DbPoolModel::build_pool_model_by_type(cfg, MYSQL)?;
     let pool_opts = PoolConstraints::new(pm.min_size, pm.max_size)
         .map(
@@ -38,6 +38,6 @@ fn build_pool(cfg: &Yaml) -> GlobalResult<Pool> {
         .write_timeout(pm.write_timeout)
         .pool_opts(pool_opts)
         .pass(db.pass.map(|data| crypto::default_decrypt(&data).expect("MYSQL密码错误")));
-    let pool = Pool::new(opts).hand_err(|msg| error!("{msg}"))?;
+    let pool = Pool::new(opts).hand_log(|msg| error!("{msg}"))?;
     Ok(pool)
 }

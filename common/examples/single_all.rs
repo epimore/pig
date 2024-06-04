@@ -19,7 +19,7 @@ async fn main() {
                 i += 1;
                 package.set_data(Bytes::from(format!("abc - {}", i)));
                 println!("{:?}",&package);
-                let _ = tx.clone().send(Zip::build_data(package)).await.hand_err(|msg|error!("{msg}"));
+                let _ = tx.clone().send(Zip::build_data(package)).await.hand_log(|msg|error!("{msg}"));
             }
             Zip::Event(_) => {}
         }

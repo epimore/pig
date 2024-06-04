@@ -2,7 +2,8 @@ pub mod err_code;
 
 use std::error::Error;
 use std::fmt::{Display, Formatter};
-use log::error;
+use log::{debug, info, warn, error};
+use constructor::Get;
 
 ///全局错误：
 /// 1.错误分为业务错误与系统错误
@@ -47,7 +48,7 @@ impl GlobalError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Get)]
 pub struct BizError {
     /// A保留：0..999;B对外暴露:1000..9999；C系统自用:10000..65535；
     /// 1000..1099网络异常
@@ -78,7 +79,11 @@ impl BizError {
 ///其他(三方/标准库...)错误转换为全局错误:系统错误
 pub trait TransError<T> {
     type F;
-    fn hand_err<O: FnOnce(String)>(self, op: O) -> Result<T, Self::F>;
+    fn hand_log<O: FnOnce(String)>(self, op: O) -> Result<T, Self::F>;
+    fn hand_log_debug(self) -> Result<T, Self::F>;
+    fn hand_log_info(self) -> Result<T, Self::F>;
+    fn hand_log_warn(self) -> Result<T, Self::F>;
+    fn hand_log_err(self) -> Result<T, Self::F>;
 }
 
 impl<T, E: Send + Sync + 'static + Error> TransError<T> for Result<T, E> {
@@ -86,11 +91,47 @@ impl<T, E: Send + Sync + 'static + Error> TransError<T> for Result<T, E> {
     ///example
     /// 将socket创建绑定异常转换为GlobalError::SysErr,并记录为error日志
     /// let socket = UdpSocket::bind(addr).await.hand_err(|msg|error!("{msg}"))?;
-    fn hand_err<O: FnOnce(String)>(self, op: O) -> Result<T, Self::F> {
+    fn hand_log<O: FnOnce(String)>(self, op: O) -> Result<T, Self::F> {
         match self {
             Ok(t) => Ok(t),
             Err(e) => {
                 op(format!("source err = [{e:?}]"));
+                Err(anyhow::Error::from(e))
+            }
+        }
+    }
+    fn hand_log_debug(self) -> Result<T, Self::F> {
+        match self {
+            Ok(t) => Ok(t),
+            Err(e) => {
+                debug!("source err = [{e:?}]");
+                Err(anyhow::Error::from(e))
+            }
+        }
+    }
+    fn hand_log_info(self) -> Result<T, Self::F> {
+        match self {
+            Ok(t) => Ok(t),
+            Err(e) => {
+                info!("source err = [{e:?}]");
+                Err(anyhow::Error::from(e))
+            }
+        }
+    }
+    fn hand_log_warn(self) -> Result<T, Self::F> {
+        match self {
+            Ok(t) => Ok(t),
+            Err(e) => {
+                warn!("source err = [{e:?}]");
+                Err(anyhow::Error::from(e))
+            }
+        }
+    }
+    fn hand_log_err(self) -> Result<T, Self::F> {
+        match self {
+            Ok(t) => Ok(t),
+            Err(e) => {
+                error!("source err = [{e:?}]");
                 Err(anyhow::Error::from(e))
             }
         }

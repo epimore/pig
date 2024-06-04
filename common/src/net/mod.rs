@@ -34,7 +34,7 @@ async fn net_run(protocol: shared::Protocol, socket_addr: SocketAddr) -> GlobalR
     let rw = core::listen(protocol, socket_addr, listen_tx).await?;
     let (accept_tx, accept_rx) = tokio::sync::mpsc::channel(shared::CHANNEL_BUFFER_SIZE);
     tokio::spawn(async move {
-        core::accept(listen_rx, accept_tx).await.hand_err(|msg| error!("{msg}")).unwrap();
+        core::accept(listen_rx, accept_tx).await.hand_log(|msg| error!("{msg}")).unwrap();
     });
     tokio::spawn(async move {
         core::rw(accept_rx).await;

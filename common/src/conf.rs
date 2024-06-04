@@ -16,12 +16,12 @@ pub fn get_config() -> Arc<Vec<Yaml>> {
 
 fn make() -> Vec<Yaml> {
     // let path = get_conf_path();
-    let path = "/home/ubuntu20/code/rs/mv/github/epimore/gmv/stream/config.yml".to_string();
-    // let path = "/home/ubuntu20/code/rs/mv/github/epimore/gmv/session/config.yml".to_string();
-    let mut file = File::open(path).hand_err(|msg| error!("{msg}")).unwrap();
+    // let path = "/home/ubuntu20/code/rs/mv/github/epimore/gmv/stream/config.yml".to_string();
+    let path = "/home/ubuntu20/code/rs/mv/github/epimore/gmv/session/config.yml".to_string();
+    let mut file = File::open(path).hand_log(|msg| error!("{msg}")).unwrap();
     let mut conf = String::new();
-    file.read_to_string(&mut conf).hand_err(|msg| error!("{msg}")).unwrap();
-    let vc = YamlLoader::load_from_str(&conf).hand_err(|msg| error!("{msg}")).unwrap();
+    file.read_to_string(&mut conf).hand_log(|msg| error!("{msg}")).unwrap();
+    let vc = YamlLoader::load_from_str(&conf).hand_log(|msg| error!("{msg}")).unwrap();
     vc
 }
 
@@ -38,10 +38,10 @@ fn get_conf_path() -> String {
         )
         .get_matches();
     matches.try_get_one::<String>("config")
-        .hand_err(|msg| error!("{msg}"))
+        .hand_log(|msg| error!("{msg}"))
         .unwrap()
         .ok_or(GlobalError::SysErr(anyhow!("miss config path")))
-        .hand_err(|msg| error!("{msg}"))
+        .hand_log(|msg| error!("{msg}"))
         .unwrap()
         .to_string()
 }

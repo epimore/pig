@@ -40,8 +40,8 @@ fn calssify(mut output: Receiver<Zip>, tw_tx: Sender<Zip>, uw_tx: Sender<Zip>) {
     tokio::spawn(async move {
         while let Some(zip) = output.recv().await {
             match zip.get_bill_protocol() {
-                &Protocol::UDP => { let _ = uw_tx.clone().send(zip).await.hand_err(|msg| error!("{msg}")); }
-                &Protocol::TCP => { let _ = tw_tx.clone().send(zip).await.hand_err(|msg| error!("{msg}")); }
+                &Protocol::UDP => { let _ = uw_tx.clone().send(zip).await.hand_log(|msg| error!("{msg}")); }
+                &Protocol::TCP => { let _ = tw_tx.clone().send(zip).await.hand_log(|msg| error!("{msg}")); }
                 &Protocol::ALL => { warn!("全协议发送????") }
             }
         }
@@ -61,7 +61,7 @@ pub async fn accept(mut rx: Receiver<GateListener>, tx: Sender<GateAccept>) -> G
                         //给予每个对外发送数据tcp连接一个接收句柄，并将其对应的发送句柄保存起来
                         let (lone_output_tx, lone_output_rx) = mpsc::channel(CHANNEL_BUFFER_SIZE);
                         let gate1 = Gate::new(local_addr, input.clone(), lone_output_rx);
-                        let _ = tcp::accept(gate1, &listenner, sender.clone(), lone_output_tx).await.hand_err(|msg| error!("{msg}"));
+                        let _ = tcp::accept(gate1, &listenner, sender.clone(), lone_output_tx).await.hand_log(|msg| error!("{msg}"));
                     }
                 });
                 tokio::spawn(async move {
@@ -74,7 +74,7 @@ pub async fn accept(mut rx: Receiver<GateListener>, tx: Sender<GateAccept>) -> G
                                 warn!("【TCP】连接不存在 => {:?}",&bill);
                             }
                             Some(lone_output_tx) => {
-                                let _ = lone_output_tx.send(zip).await.hand_err(|msg| error!("{msg}"));
+                                let _ = lone_output_tx.send(zip).await.hand_log(|msg| error!("{msg}"));
                             }
                         }
                     }

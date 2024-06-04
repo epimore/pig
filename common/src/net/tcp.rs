@@ -14,9 +14,9 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 //卸载监听 drop listen？
 pub async fn listen(gate: Gate, tx: Sender<GateListener>) -> GlobalResult<()> {
     let local_addr = gate.get_local_addr().clone();
-    let tcp_listener = TcpListener::bind(local_addr).await.hand_err(|msg| error!("{msg}"))?;
+    let tcp_listener = TcpListener::bind(local_addr).await.hand_log(|msg| error!("{msg}"))?;
     let gate_listener = GateListener::build_tcp(gate, tcp_listener);
-    tx.send(gate_listener).await.hand_err(|msg| error!("{msg}"))?;
+    tx.send(gate_listener).await.hand_log(|msg| error!("{msg}"))?;
     debug!("开始监听 TCP 地址： {}", local_addr);
     Ok(())
 }
@@ -30,8 +30,8 @@ pub async fn accept(gate: Gate, tcp_listener: &TcpListener, accept_tx: Sender<Ga
         map.insert(bill, lone_output_tx);
         GateAccept::accept_tcp(gate, remote_addr, tcp_stream)
     })
-        .hand_err(|msg| error!("{:?} : TCP accept has failed too many times.{msg}",local_addr))?;
-    accept_tx.send(gate_accept).await.hand_err(|msg| error!("{msg}"))?;
+        .hand_log(|msg| error!("{:?} : TCP accept has failed too many times.{msg}",local_addr))?;
+    accept_tx.send(gate_accept).await.hand_log(|msg| error!("{msg}"))?;
     Ok(())
 }
 
@@ -69,7 +69,7 @@ pub async fn read(mut reader: io::ReadHalf<TcpStream>, local_addr: SocketAddr, r
                             );
                     let bill = Bill::new(local_addr, remote_addr, Protocol::TCP);
                     let zip = Zip::build_data(Package::new(bill, Bytes::copy_from_slice(&buf[..len])));
-                    let _ = tx.send(zip).await.hand_err(|msg| error!("{msg}"));
+                    let _ = tx.send(zip).await.hand_log(|msg| error!("{msg}"));
                 } else {
                     debug!("【TCP connection disconnected】 【Local_addr = {:?}】 【Remote_addr = {:?}】",
                             local_addr,
@@ -81,7 +81,7 @@ pub async fn read(mut reader: io::ReadHalf<TcpStream>, local_addr: SocketAddr, r
                     let map = TCP_HANDLE_MAP.clone();
                     map.remove(&bill);
                     let zip = Zip::build_event(Event::new(bill, 0u8));
-                    let _ = tx.send(zip).await.hand_err(|msg| error!("{msg}"));
+                    let _ = tx.send(zip).await.hand_log(|msg| error!("{msg}"));
                     break;
                 }
             }

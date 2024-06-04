@@ -18,14 +18,14 @@ fn gen_ascii_chars(size: usize) -> GlobalResult<String> {
             .choose_multiple(&mut rng, size)
             .cloned()
             .collect()
-    ).hand_err(|err|error!("{err}"))?;
+    ).hand_log(|err|error!("{err}"))?;
     Ok(string)
 }
 
 fn encrypt(key: &str, data: &str) -> GlobalResult<String> {
     let iv_str = gen_ascii_chars(16)?;
     let iv = iv_str.as_bytes();
-    let cipher = AesCbc::new_from_slices(key.as_bytes(), iv).hand_err(|err|error!("{err}"))?;
+    let cipher = AesCbc::new_from_slices(key.as_bytes(), iv).hand_log(|err|error!("{err}"))?;
     let ciphertext = cipher.encrypt_vec(data.as_bytes());
     let mut buffer = bytebuffer::ByteBuffer::from_bytes(iv);
     buffer.write_bytes(&ciphertext);
@@ -33,9 +33,9 @@ fn encrypt(key: &str, data: &str) -> GlobalResult<String> {
 }
 
 fn decrypt(key: &str, data: &str) -> GlobalResult<String> {
-    let bytes = base64::decode(data).hand_err(|err|error!("{err}"))?;
-    let cipher = AesCbc::new_from_slices(key.as_bytes(), &bytes[0..16]).hand_err(|err|error!("{err}"))?;
-    let string = String::from_utf8(cipher.decrypt_vec(&bytes[16..]).hand_err(|err|error!("{err}"))?).hand_err(|err|error!("{err}"))?;
+    let bytes = base64::decode(data).hand_log(|err|error!("{err}"))?;
+    let cipher = AesCbc::new_from_slices(key.as_bytes(), &bytes[0..16]).hand_log(|err|error!("{err}"))?;
+    let string = String::from_utf8(cipher.decrypt_vec(&bytes[16..]).hand_log(|err|error!("{err}"))?).hand_log(|err|error!("{err}"))?;
     Ok(string)
 }
 
