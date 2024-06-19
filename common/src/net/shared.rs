@@ -84,8 +84,8 @@ impl Zip {
 
 #[derive(Debug, New, Set, Get)]
 pub struct Package {
-    bill: Bill,
-    data: Bytes,
+   pub bill: Bill,
+   pub data: Bytes,
 }
 
 impl Package {
