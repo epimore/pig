@@ -2,7 +2,7 @@ pub mod err_code;
 
 use std::error::Error;
 use std::fmt::{Display, Formatter};
-use log::{debug, info, warn, error};
+use log::error;
 use constructor::Get;
 
 ///全局错误：
@@ -80,10 +80,6 @@ impl BizError {
 pub trait TransError<T> {
     type F;
     fn hand_log<O: FnOnce(String)>(self, op: O) -> Result<T, Self::F>;
-    fn hand_log_debug(self) -> Result<T, Self::F>;
-    fn hand_log_info(self) -> Result<T, Self::F>;
-    fn hand_log_warn(self) -> Result<T, Self::F>;
-    fn hand_log_err(self) -> Result<T, Self::F>;
 }
 
 impl<T, E: Send + Sync + 'static + Error> TransError<T> for Result<T, E> {
@@ -96,42 +92,6 @@ impl<T, E: Send + Sync + 'static + Error> TransError<T> for Result<T, E> {
             Ok(t) => Ok(t),
             Err(e) => {
                 op(format!("source err = [{e:?}]"));
-                Err(anyhow::Error::from(e))
-            }
-        }
-    }
-    fn hand_log_debug(self) -> Result<T, Self::F> {
-        match self {
-            Ok(t) => Ok(t),
-            Err(e) => {
-                debug!("source err = [{e:?}]");
-                Err(anyhow::Error::from(e))
-            }
-        }
-    }
-    fn hand_log_info(self) -> Result<T, Self::F> {
-        match self {
-            Ok(t) => Ok(t),
-            Err(e) => {
-                info!("source err = [{e:?}]");
-                Err(anyhow::Error::from(e))
-            }
-        }
-    }
-    fn hand_log_warn(self) -> Result<T, Self::F> {
-        match self {
-            Ok(t) => Ok(t),
-            Err(e) => {
-                warn!("source err = [{e:?}]");
-                Err(anyhow::Error::from(e))
-            }
-        }
-    }
-    fn hand_log_err(self) -> Result<T, Self::F> {
-        match self {
-            Ok(t) => Ok(t),
-            Err(e) => {
-                error!("source err = [{e:?}]");
                 Err(anyhow::Error::from(e))
             }
         }

@@ -2,7 +2,6 @@ use std::path::PathBuf;
 use chrono::Local;
 use log::LevelFilter;
 use yaml_rust::Yaml;
-use fern::colors::{Color, ColoredLevelConfig};
 
 #[derive(Debug)]
 pub struct Logger {
@@ -17,18 +16,12 @@ impl Logger {
         let level: LevelFilter = Self::build_level_filter(&log.level);
         let path = std::path::Path::new(&log.store_path);
         std::fs::create_dir_all(path).unwrap();
-        let colors = ColoredLevelConfig::new()
-            .info(Color::Green)
-            .debug(Color::Blue)
-            .error(Color::Red)
-            .warn(Color::Yellow)
-            .trace(Color::White);
         fern::Dispatch::new()
             .format(move |out, message, record| {
                 out.finish(format_args!(
                     "[{}] [{}] [{}] {} {}\n{}",
                     Local::now().format("%Y-%m-%d %H:%M:%S"),
-                    colors.color(record.level()),
+                    record.level(),
                     record.target(),
                     record.file().unwrap_or("unknown"),
                     record.line().unwrap_or(0),

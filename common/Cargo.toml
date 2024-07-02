@@ -9,7 +9,7 @@ edition = "2021"
 anyhow = "1.0"
 thiserror = "1.0"
 log = "0.4"
-fern = { version = "0.6", features = ["date-based","colored"] }
+fern = { version = "0.6", features = ["date-based"] }
 clap = { version = "4.4" }
 yaml-rust = "0.4"
 chrono = "0.4"
