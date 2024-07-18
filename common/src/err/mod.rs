@@ -54,8 +54,8 @@ pub struct BizError {
     /// 1000..1099网络异常
     /// 1100..1199数据异常
     /// ...
-    code: u16,
-    msg: String,
+    pub code: u16,
+    pub msg: String,
 }
 
 impl Error for BizError {}
