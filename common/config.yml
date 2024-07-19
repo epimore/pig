@@ -2,6 +2,9 @@ log:
   level: debug
   suffix: server
   store_path: ./logs
+  specify:
+    - crate: hyper::http::h1  #或者hyper用指全部
+      level: info
 
 
 

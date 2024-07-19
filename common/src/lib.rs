@@ -18,6 +18,7 @@ pub use clap;
 pub use chrono;
 pub use once_cell;
 pub use rand;
+pub use base64;
 use yaml_rust::Yaml;
 use constructor::Get;
 
