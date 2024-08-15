@@ -21,8 +21,8 @@ pub const ALL: &str = "ALL";
 ///type_code = 0 为连接断开
 #[derive(Debug, New, Set, Get)]
 pub struct Event {
-    bill: Bill,
-    type_code: u8,
+    pub bill: Bill,
+    pub type_code: u8,
 }
 
 #[derive(Debug, Eq, Hash, PartialEq, Clone)]
@@ -44,9 +44,9 @@ impl Protocol {
 
 #[derive(Debug, Eq, Hash, PartialEq, New, Set, Get, Clone)]
 pub struct Bill {
-    local_addr: SocketAddr,
-    remote_addr: SocketAddr,
-    protocol: Protocol,
+    pub local_addr: SocketAddr,
+    pub remote_addr: SocketAddr,
+    pub protocol: Protocol,
 }
 
 ///EVENT:
@@ -84,8 +84,8 @@ impl Zip {
 
 #[derive(Debug, New, Set, Get)]
 pub struct Package {
-   pub bill: Bill,
-   pub data: Bytes,
+    pub bill: Bill,
+    pub data: Bytes,
 }
 
 impl Package {

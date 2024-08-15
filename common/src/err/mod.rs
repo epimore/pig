@@ -2,6 +2,7 @@ pub mod err_code;
 
 use std::error::Error;
 use std::fmt::{Display, Formatter};
+use anyhow::anyhow;
 use log::error;
 use constructor::Get;
 
@@ -45,6 +46,12 @@ impl GlobalError {
     #[allow(dead_code)]
     pub fn new_biz_error<O: FnOnce(String)>(code: u16, msg: &str, op: O) -> Self {
         Self::BizErr(BizError::build_biz_error(code, msg, op, None))
+    }
+
+    #[allow(dead_code)]
+    pub fn new_sys_error<O: FnOnce(String)>(msg:&str,op: O)->Self{
+        op(format!("sys err = [{msg}]"));
+        Self::SysErr(anyhow!("{msg}"))
     }
 }
 
