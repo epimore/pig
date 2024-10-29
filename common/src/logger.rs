@@ -1,10 +1,11 @@
 use std::path::PathBuf;
+
 use chrono::Local;
 use fern::Dispatch;
 use log::LevelFilter;
-use yaml_rust::Yaml;
-use cfg::{conf, Conf};
 use serde::{Deserialize, Deserializer};
+
+use cfg_lib::{conf, Conf};
 
 /// 通过配置文件控制日志格式化输出
 /// # Examples
@@ -140,7 +141,8 @@ fn default_app() -> String {
 
 #[cfg(test)]
 mod tests {
-    use cfg::{Conf};
+    use cfg_lib::Conf;
+
     use super::*;
 
     #[test]

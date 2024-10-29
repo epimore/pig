@@ -4,7 +4,7 @@ use block_modes::block_padding::Pkcs7;
 use log::error;
 use rand::seq::SliceRandom;
 
-use crate::err::{GlobalResult, TransError};
+use exception::{GlobalResult, TransError};
 
 type AesCbc = Cbc<Aes256, Pkcs7>;
 

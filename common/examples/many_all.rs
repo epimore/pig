@@ -3,7 +3,7 @@ use std::net::SocketAddr;
 use std::str::FromStr;
 use bytes::Bytes;
 use log::error;
-use common::err::TransError;
+use exception::TransError;
 use common::net::shared::{Zip};
 
 //cmd: cargo run --example many_all --features net
