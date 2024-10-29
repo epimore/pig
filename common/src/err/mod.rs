@@ -1,5 +1,3 @@
-pub mod err_code;
-
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 use anyhow::anyhow;

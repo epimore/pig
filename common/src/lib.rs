@@ -23,9 +23,9 @@ use yaml_rust::Yaml;
 use constructor::Get;
 
 ///just build config info and log;
-pub fn init() -> Tripe {
-    Tripe::new()
-}
+// pub fn init() -> Tripe {
+//     Tripe::new()
+// }
 
 pub fn get_config() -> Arc<Vec<Yaml>> {
     conf::get_config()
@@ -39,12 +39,11 @@ pub struct Tripe {
 }
 
 impl Tripe {
-    fn new() -> Self {
-        let vc = conf::get_config();
-        let logger = logger::Logger::init(&vc);
-        Self {
-            cfg: vc,
-            logger,
-        }
-    }
+    // fn new() -> Self {
+    //     let logger = logger::Logger::init();
+    //     Self {
+    //         cfg: vc,
+    //         logger,
+    //     }
+    // }
 }

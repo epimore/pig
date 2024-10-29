@@ -1,10 +1,12 @@
 log:
-  level: debug
-  suffix: server
+  level: debug #默认日志等级
+  prefix: server #默认日志文件前缀; eg:server_2024-10-26.log
   store_path: ./logs
-  specify:
-    - crate: hyper::http::h1  #或者hyper用指全部
-      level: info
+  specify: #指定日志输出
+    - crate_name: hyper::http::h1  #或者hyper用指全部
+      level: Info #日志等级
+      file_name_prefix: hyper #日志文件前缀
+      additivity: false #是否记录到其父日志文件中
 
 
 
