@@ -70,7 +70,6 @@ impl Logger {
                 let mut module_dispatch = Dispatch::new()
                     .level(module_level)
                     .filter(move |metadata| metadata.target().starts_with(&target));
-                // .level_for(target,module_level);
 
                 // 如果指定了文件名前缀，则将日志输出到指定的文件
                 if let Some(prefix) = &s.file_name_prefix {
@@ -99,7 +98,7 @@ impl Logger {
 }
 
 fn level_filter(level: &str) -> LevelFilter {
-    match level.to_uppercase().as_str() {
+    match level.trim().to_uppercase().as_str() {
         "OFF" => LevelFilter::Off,
         "ERROR" => LevelFilter::Error,
         "WARN" => LevelFilter::Warn,
