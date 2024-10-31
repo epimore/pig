@@ -6,6 +6,7 @@ use log::LevelFilter;
 use serde::{Deserialize, Deserializer};
 
 use cfg_lib::{conf, Conf};
+use crate::serde_default;
 
 /// 通过配置文件控制日志格式化输出
 /// # Examples
@@ -28,17 +29,20 @@ use cfg_lib::{conf, Conf};
 ///       additivity: true #是否记录到全局日志文件中
 ///  ```
 #[derive(Debug, Deserialize)]
-#[conf(prefix = "log")]
+#[conf(prefix = "log",
+    path = "/home/ubuntu20/code/rs/mv/github/epimore/pig/common/config.yml")]
 pub struct Logger {
     #[serde(default)]
     store_path: PathBuf,
-    #[serde(default = "default_app")]
+    #[serde(default = "default_prefix")]
     prefix: String,
     #[serde(deserialize_with = "validate_level")]
-    #[serde(default = "default_info")]
+    #[serde(default = "default_level")]
     level: String,
     specify: Option<Vec<Specify>>,
 }
+serde_default!(default_prefix, String, "app".to_string());
+serde_default!(default_level, String, "info".to_string());
 
 #[derive(Debug, Deserialize)]
 pub struct Specify {
@@ -110,7 +114,7 @@ impl Logger {
     }
 }
 
-fn level_filter(level: &str) -> LevelFilter {
+pub fn level_filter(level: &str) -> LevelFilter {
     match level.trim().to_uppercase().as_str() {
         "OFF" => LevelFilter::Off,
         "ERROR" => LevelFilter::Error,
@@ -122,7 +126,7 @@ fn level_filter(level: &str) -> LevelFilter {
     }
 }
 
-fn validate_level<'de, D>(deserializer: D) -> Result<String, D::Error>
+pub fn validate_level<'de, D>(deserializer: D) -> Result<String, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -131,41 +135,83 @@ where
     Ok(level)
 }
 
-fn default_info() -> String {
-    "info".to_string()
-}
-
-fn default_app() -> String {
-    "app".to_string()
-}
-
 #[cfg(test)]
 mod tests {
-    use cfg_lib::Conf;
-
+    use std::collections::HashMap;
+    use serde_yaml::Value;
     use super::*;
-
-    #[test]
-    fn test_conf_log() {
-        let logger = Logger::conf();
-        println!("{:?}", logger);
-    }
-
-    #[test]
-    fn test_log() {
-        let _logger = Logger::init();
-
-        log::info!("This is a default log message.");
-        log::debug!("This is a debug log message.");
-        log::error!("This is an error log message.");
-
-        // 指定模块日志
-        log::info!(target: "hyper::http::h1", "This is a hyper::http::h1 log message.");
-        log::debug!(target: "hyper", "This is a hyper debug log message.");
-    }
 
     #[test]
     fn test_default_value() {
         println!("{:?}", PathBuf::default());
+    }
+
+    const YML: &str = r#"
+db:
+  mysql:
+    host_or_ip: "localhost"
+    port: 3306
+    db_name: "test_db"
+    user: "root"
+    pass: "password"
+  sqllite:
+    host_or_ip: "localhost"
+    port: 3306
+    db_name: "test_db"
+    user: "root"
+    pass: "password"
+"#;
+
+    #[test]
+    fn test_prefix_conf() {
+        let yaml_value: serde_yaml::Value = serde_yaml::from_str(YML).unwrap();
+        let mut target_value = &yaml_value;
+        for key in "db.mysql".split('.') {
+            if let serde_yaml::Value::Mapping(map) = target_value {
+                target_value = map.get(Value::String(key.to_string()))
+                    .expect("Specified prefix not found in YAML");
+            } else {
+                panic!("Invalid YAML structure for the specified prefix");
+            }
+        }
+        let db: DbModel = serde_yaml::from_value(target_value.clone()).unwrap();
+        println!("{:?}", db);
+    }
+
+    #[derive(Debug, Deserialize)]
+    pub struct DbModel
+    {
+        pub host_or_ip: String,
+        pub port: u16,
+        pub db_name: String,
+        pub user:
+            Option<String>,
+        pub pass: Option<String>,
+        pub connect_attrs:
+            Option<HashMap<String, String>>,
+    }
+
+    impl Conf for DbModel
+    {
+        fn conf() -> Self
+        {
+            let yaml_content = std::fs::read_to_string("/home/ubuntu20/code/rs/mv/github/epimore/pig/common/config.yml").expect("Failed to read YAML file");
+            let yaml_value: serde_yaml::Value = serde_yaml::from_str(&yaml_content).expect("Failed to parse YAML");
+            let mut target_value = &yaml_value;
+            for key in "db.mysql".split('.')
+            {
+                if let serde_yaml::Value::Mapping(map) = target_value
+                {
+                    target_value = map.get(&Value::String(key.to_string())).expect("Specified prefix not found in YAML");
+                } else { panic!("Invalid YAML structure for the specified prefix"); }
+            }
+            serde_yaml::from_value(target_value.clone()).expect("Failed to map YAML value to struct")
+        }
+    }
+
+    #[test]
+    fn test_conf() {
+        let model = DbModel::conf();
+        println!("{:?}", model);
     }
 }

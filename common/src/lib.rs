@@ -14,4 +14,6 @@ pub mod logger;
 #[cfg(feature = "net")]
 pub mod net;
 pub mod utils;
+#[cfg(feature = "mysqlx")]
+pub mod dbx;
 
