@@ -2,7 +2,8 @@ pub mod code;
 
 use std::error::Error;
 use std::fmt::{Display, Formatter};
-use anyhow::anyhow;
+pub use anyhow;
+pub use thiserror;
 
 ///全局错误：
 /// 1.错误分为业务错误与系统错误
@@ -49,7 +50,7 @@ impl GlobalError {
     #[allow(dead_code)]
     pub fn new_sys_error<O: FnOnce(String)>(msg:&str,op: O)->Self{
         op(format!("sys err = [{msg}]"));
-        Self::SysErr(anyhow!("{msg}"))
+        Self::SysErr(anyhow::anyhow!("{msg}"))
     }
 }
 
