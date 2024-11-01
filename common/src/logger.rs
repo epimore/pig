@@ -5,7 +5,7 @@ use fern::Dispatch;
 use log::LevelFilter;
 use serde::{Deserialize, Deserializer};
 
-use cfg_lib::{conf, Conf};
+use cfg_lib::{conf};
 use crate::serde_default;
 
 /// 通过配置文件控制日志格式化输出
@@ -55,7 +55,7 @@ pub struct Specify {
 
 
 impl Logger {
-    pub fn init() -> Logger {
+    pub fn init() {
         let mut log: Logger = Logger::conf();
         if !log.store_path.ends_with("/") { log.store_path.push("") };
         let default_level: LevelFilter = level_filter(&log.level);
@@ -110,7 +110,6 @@ impl Logger {
             .chain(default_dispatch)
             .apply()
             .expect("Logger initialization failed");
-        log
     }
 }
 

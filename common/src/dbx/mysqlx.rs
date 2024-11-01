@@ -7,7 +7,7 @@ use sqlx::{Connection, ConnectOptions, MySql, Pool};
 use sqlx::mysql::MySqlSslMode;
 use sqlx::pool::PoolOptions;
 
-use cfg_lib::{conf, Conf};
+use cfg_lib::{conf};
 use exception::{GlobalError, GlobalResult, TransError};
 
 use crate::{logger, serde_default};
@@ -171,7 +171,7 @@ mod tests {
     #[tokio::test]
     #[cfg(feature = "mysqlx")]
     async fn test_mysql_query() {
-        let _ = logger::Logger::init();
+        logger::Logger::init();
         init_conn_pool();
         let pool = get_conn_by_pool().expect("获取连接失败");
 

@@ -3,10 +3,10 @@ log:
   prefix: server #默认日志文件前缀; eg:server_2024-10-26.log
   store_path: ./logs
   specify: #指定日志输出
-    - crate_name: sqlx  #或者hyper用指全部
+    - crate_name: sqlx  #sqlx用指全部，可sqlx::xxx
       level: debug #日志等级
       file_name_prefix: sql #日志文件前缀
-      additivity: false #是否记录到其父日志文件中
+      additivity: false #是否记录到默认日志文件中
 
 db:
   mysql:
