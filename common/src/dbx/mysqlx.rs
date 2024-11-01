@@ -176,6 +176,6 @@ mod tests {
         let pool = get_conn_by_pool().expect("获取连接失败");
 
         let x = sqlx::query("select * from GMV_OAUTH").fetch_one(pool).await;
-        println!("res = {}", x.is_ok());
+        println!("res = {:?}", x);
     }
 }
