@@ -1,7 +1,7 @@
 use std::net::SocketAddr;
 use std::sync::{Arc};
 use tokio::{io};
-use crate::net::shared::{Zip, Gate, GateListener, GateAccept, Protocol, CHANNEL_BUFFER_SIZE, TCP_HANDLE_MAP};
+use crate::net::state::{Zip, Gate, GateListener, GateAccept, Protocol, CHANNEL_BUFFER_SIZE, TCP_HANDLE_MAP};
 use crate::net::{tcp, udp};
 use log::{error, warn};
 use crate::exception::{GlobalResult, TransError};
@@ -10,7 +10,7 @@ use tokio::sync::mpsc::{Receiver, Sender};
 
 //启动监听并返回读写句柄
 pub async fn listen(protocol: Protocol, local_addr: SocketAddr, tx: Sender<GateListener>) -> GlobalResult<(Sender<Zip>, Receiver<Zip>)> {
-    //socket 读数据通道 intput
+    //socket 读数据通道 input
     let (input_tx, input_rx) = mpsc::channel(CHANNEL_BUFFER_SIZE);
     //socket 写数据通道 output
     let (output_tx, output_rx) = mpsc::channel(CHANNEL_BUFFER_SIZE);
@@ -55,7 +55,7 @@ pub async fn accept(mut rx: Receiver<GateListener>, tx: Sender<GateAccept>) -> G
             GateListener::Tcp(gate, listenner) => {
                 let sender = tx.clone();
                 let local_addr = gate.get_local_addr().clone();
-                let input = gate.get_intput().clone();
+                let input = gate.get_input().clone();
                 tokio::spawn(async move {
                     loop {
                         //给予每个对外发送数据tcp连接一个接收句柄，并将其对应的发送句柄保存起来
@@ -94,7 +94,7 @@ pub async fn rw(mut rx: Receiver<GateAccept>) {
             GateAccept::Tcp(gate, remote_addr, tcp_stream) => {
                 let (read, write) = io::split(tcp_stream);
                 let local_addr = gate.get_local_addr().clone();
-                let sender = gate.get_intput().clone();
+                let sender = gate.get_input().clone();
                 tokio::spawn(async move {
                     let _ = tcp::read(read, local_addr, remote_addr, sender).await;
                 });
@@ -105,7 +105,7 @@ pub async fn rw(mut rx: Receiver<GateAccept>) {
             }
             GateAccept::Udp(gate, udp_socket) => {
                 let local_addr = gate.get_local_addr().clone();
-                let sender = gate.get_intput().clone();
+                let sender = gate.get_input().clone();
                 let receiver = gate.get_owned_output();
                 let aus = Arc::new(udp_socket);
                 let ausc = aus.clone();

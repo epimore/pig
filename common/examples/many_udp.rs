@@ -4,22 +4,22 @@ use std::str::FromStr;
 use bytes::Bytes;
 use log::error;
 use exception::TransError;
-use common::net::shared::Zip;
+use common::net::state::Zip;
 
 //cmd: cargo run --example many_udp --features net
 #[tokio::main]
 async fn main() {
     let _tripe = common::init();
-    let (tx1, mut rx1) = net::init_net(net::shared::Protocol::UDP, SocketAddr::from_str("0.0.0.0:18887").unwrap()).await.unwrap();
-    let (tx2, mut rx2) = net::init_net(net::shared::Protocol::UDP, SocketAddr::from_str("0.0.0.0:18888").unwrap()).await.unwrap();
-    let (tx3, mut rx3) = net::init_net(net::shared::Protocol::UDP, SocketAddr::from_str("0.0.0.0:18889").unwrap()).await.unwrap();
+    let (tx1, mut rx1) = net::init_net(net::state::Protocol::UDP, SocketAddr::from_str("0.0.0.0:18887").unwrap()).await.unwrap();
+    let (tx2, mut rx2) = net::init_net(net::state::Protocol::UDP, SocketAddr::from_str("0.0.0.0:18888").unwrap()).await.unwrap();
+    let (tx3, mut rx3) = net::init_net(net::state::Protocol::UDP, SocketAddr::from_str("0.0.0.0:18889").unwrap()).await.unwrap();
     let mut i = 0;
     tokio::spawn(
         async move {
             while let Some(zip) = rx1.recv().await {
                 match zip {
                     Zip::Data(mut package) => {
-                        println!("bill = {:?} - data_size: {}", package.get_bill(), package.get_data().len());
+                        println!("association = {:?} - data_size: {}", package.get_association(), package.get_data().len());
                         i += 1;
                         package.set_data(Bytes::from(format!("abc - {}", i)));
                         println!("{:?}", &package);
@@ -35,7 +35,7 @@ async fn main() {
             while let Some(zip) = rx2.recv().await {
                 match zip {
                     Zip::Data(mut package) => {
-                        println!("bill = {:?} - data_size: {}", package.get_bill(), package.get_data().len());
+                        println!("association = {:?} - data_size: {}", package.get_association(), package.get_data().len());
                         i += 1;
                         package.set_data(Bytes::from(format!("abc - {}", i)));
                         println!("{:?}", &package);
@@ -49,7 +49,7 @@ async fn main() {
     while let Some(zip) = rx3.recv().await {
         match zip {
             Zip::Data(mut package) => {
-                println!("bill = {:?} - data_size: {}", package.get_bill(), package.get_data().len());
+                println!("association = {:?} - data_size: {}", package.get_association(), package.get_data().len());
                 i += 1;
                 package.set_data(Bytes::from(format!("abc - {}", i)));
                 println!("{:?}", &package);

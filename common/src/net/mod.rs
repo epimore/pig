@@ -4,12 +4,12 @@ use log::error;
 use tokio::sync::mpsc::{Receiver, Sender};
 
 use crate::exception::{GlobalResult, TransError};
-use crate::net::shared::{Zip};
+use crate::net::state::{Zip};
 
 mod udp;
 mod tcp;
 mod core;
-pub mod shared;
+pub mod state;
 
 ///todo 主动断开清理连接;创建事件句柄?封装数据枚举：EVENT-DATA
 // static RUNTIME: Lazy<Runtime> = Lazy::new(|| {
@@ -25,14 +25,14 @@ pub mod shared;
 // });
 
 #[cfg(feature = "net")]
-pub async fn init_net(protocol: shared::Protocol, socket_addr: SocketAddr) -> GlobalResult<(Sender<Zip>, Receiver<Zip>)> {
+pub async fn init_net(protocol: state::Protocol, socket_addr: SocketAddr) -> GlobalResult<(Sender<Zip>, Receiver<Zip>)> {
     net_run(protocol, socket_addr).await
 }
 
-async fn net_run(protocol: shared::Protocol, socket_addr: SocketAddr) -> GlobalResult<(Sender<Zip>, Receiver<Zip>)> {
-    let (listen_tx, listen_rx) = tokio::sync::mpsc::channel(shared::CHANNEL_BUFFER_SIZE);
+async fn net_run(protocol: state::Protocol, socket_addr: SocketAddr) -> GlobalResult<(Sender<Zip>, Receiver<Zip>)> {
+    let (listen_tx, listen_rx) = tokio::sync::mpsc::channel(state::CHANNEL_BUFFER_SIZE);
     let rw = core::listen(protocol, socket_addr, listen_tx).await?;
-    let (accept_tx, accept_rx) = tokio::sync::mpsc::channel(shared::CHANNEL_BUFFER_SIZE);
+    let (accept_tx, accept_rx) = tokio::sync::mpsc::channel(state::CHANNEL_BUFFER_SIZE);
     tokio::spawn(async move {
         core::accept(listen_rx, accept_tx).await.hand_log(|msg| error!("{msg}")).unwrap();
     });

@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use bytes::Bytes;
@@ -5,6 +6,7 @@ use dashmap::DashMap;
 use once_cell::sync::Lazy;
 use tokio::net::{TcpListener, TcpStream, UdpSocket};
 use tokio::sync::mpsc::{Sender, Receiver};
+use tokio::time::Instant;
 use constructor::{Get, New, Set};
 
 
@@ -100,7 +102,7 @@ pub struct Gate {
     //监听地址
     local_addr: SocketAddr,
     //从socket读取数据向程序发送
-    intput: Sender<Zip>,
+    input: Sender<Zip>,
     //从程序中接收数据向socket写入
     output: Receiver<Zip>,
 }
