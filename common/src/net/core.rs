@@ -39,7 +39,7 @@ pub async fn listen(protocol: Protocol, local_addr: SocketAddr, tx: Sender<GateL
 fn calssify(mut output: Receiver<Zip>, tw_tx: Sender<Zip>, uw_tx: Sender<Zip>) {
     tokio::spawn(async move {
         while let Some(zip) = output.recv().await {
-            match zip.get_bill_protocol() {
+            match zip.get_association_protocol() {
                 &Protocol::UDP => { let _ = uw_tx.clone().send(zip).await.hand_log(|msg| error!("{msg}")); }
                 &Protocol::TCP => { let _ = tw_tx.clone().send(zip).await.hand_log(|msg| error!("{msg}")); }
                 &Protocol::ALL => { warn!("全协议发送????") }
@@ -68,10 +68,10 @@ pub async fn accept(mut rx: Receiver<GateListener>, tx: Sender<GateAccept>) -> G
                     //接收对外输出信息，并根据Zip上的账单信息，发送到对应的TCP发送通道
                     let mut receiver = gate.get_owned_output();
                     while let Some(zip) = receiver.recv().await {
-                        let bill = zip.get_bill();
-                        match TCP_HANDLE_MAP.clone().get(&bill) {
+                        let association = zip.get_association();
+                        match TCP_HANDLE_MAP.clone().get(&association) {
                             None => {
-                                warn!("【TCP】连接不存在 => {:?}",&bill);
+                                warn!("【TCP】连接不存在 => {:?}",&association);
                             }
                             Some(lone_output_tx) => {
                                 let _ = lone_output_tx.send(zip).await.hand_log(|msg| error!("{msg}"));

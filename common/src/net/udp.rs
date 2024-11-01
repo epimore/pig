@@ -1,7 +1,7 @@
 use tokio::sync::mpsc::{Sender, Receiver};
 use log::{debug, error, info, warn};
 use crate::exception::{GlobalResult, TransError};
-use crate::net::shared::{Zip, Gate, GateListener, GateAccept, SOCKET_BUFFER_SIZE, Bill, Protocol, Package};
+use crate::net::shared::{Zip, Gate, GateListener, GateAccept, SOCKET_BUFFER_SIZE, Association, Protocol, Package};
 use tokio::net::UdpSocket;
 use std::net::SocketAddr;
 use bytes::Bytes;
@@ -36,8 +36,8 @@ pub async fn read(local_addr: SocketAddr, udp_socket: &UdpSocket, tx: Sender<Zip
                             remote_addr.to_string(),
                             len
                             );
-                    let bill = Bill::new(local_addr, remote_addr, Protocol::UDP);
-                    let zip = Zip::build_data(Package::new(bill, Bytes::copy_from_slice(&buf[..len])));
+                    let association = Association::new(local_addr, remote_addr, Protocol::UDP);
+                    let zip = Zip::build_data(Package::new(association, Bytes::copy_from_slice(&buf[..len])));
                     let _ = tx.send(zip).await.hand_log(|msg| error!("{msg}"));
                 }
             }
@@ -62,9 +62,9 @@ pub async fn write(udp_socket: &UdpSocket,mut rx: Receiver<Zip>) {
         match zip {
             Zip::Data(package) => {
                 let bytes = package.get_data();
-                let local_addr = package.get_bill().get_local_addr();
-                let remote_addr = package.get_bill().get_remote_addr();
-                match udp_socket.try_send_to(&*bytes, *package.get_bill().get_remote_addr()) {
+                let local_addr = package.get_association().get_local_addr();
+                let remote_addr = package.get_association().get_remote_addr();
+                match udp_socket.try_send_to(&*bytes, *package.get_association().get_remote_addr()) {
                     Ok(len) => {
                         debug!("【UDP write success】 【Local_addr = {:?}】 【Remote_addr = {:?}】 【len = {}】",
                             local_addr,

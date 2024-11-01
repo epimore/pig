@@ -9,7 +9,7 @@ use constructor::{Get, New, Set};
 
 
 //TCP连接有状态，需要持有每个连接的句柄
-pub static TCP_HANDLE_MAP: Lazy<Arc<DashMap<Bill, Sender<Zip>>>> = Lazy::new(|| {
+pub static TCP_HANDLE_MAP: Lazy<Arc<DashMap<Association, Sender<Zip>>>> = Lazy::new(|| {
     Arc::new(DashMap::new())
 });
 pub const SOCKET_BUFFER_SIZE: usize = 4096;
@@ -21,7 +21,7 @@ pub const ALL: &str = "ALL";
 ///type_code = 0 为连接断开
 #[derive(Debug, New, Set, Get)]
 pub struct Event {
-    pub bill: Bill,
+    pub association: Association,
     pub type_code: u8,
 }
 
@@ -42,8 +42,9 @@ impl Protocol {
     }
 }
 
+/// 网络相关(协议，本地地址，本地端口号，远地地址，远地端口号）
 #[derive(Debug, Eq, Hash, PartialEq, New, Set, Get, Clone)]
-pub struct Bill {
+pub struct Association {
     pub local_addr: SocketAddr,
     pub remote_addr: SocketAddr,
     pub protocol: Protocol,
@@ -67,24 +68,24 @@ impl Zip {
         Self::Event(event)
     }
 
-    pub fn get_bill(&self) -> Bill {
+    pub fn get_association(&self) -> Association {
         match &self {
-            Zip::Data(Package { bill, .. }) => { bill.clone() }
-            Zip::Event(Event { bill, .. }) => { bill.clone() }
+            Zip::Data(Package { association, .. }) => { association.clone() }
+            Zip::Event(Event { association, .. }) => { association.clone() }
         }
     }
 
-    pub fn get_bill_protocol(&self) -> &Protocol {
+    pub fn get_association_protocol(&self) -> &Protocol {
         match self {
-            Zip::Data(Package { bill: Bill { protocol, .. }, .. }) => { protocol }
-            Zip::Event(Event { bill: Bill { protocol, .. }, .. }) => { protocol }
+            Zip::Data(Package { association: Association { protocol, .. }, .. }) => { protocol }
+            Zip::Event(Event { association: Association { protocol, .. }, .. }) => { protocol }
         }
     }
 }
 
 #[derive(Debug, New, Set, Get)]
 pub struct Package {
-    pub bill: Bill,
+    pub association: Association,
     pub data: Bytes,
 }
 

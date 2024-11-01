@@ -3,7 +3,7 @@ use std::time::Duration;
 use tokio::sync::mpsc::{Receiver, Sender};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::{io, time};
-use crate::net::shared::{Zip, Gate, GateListener, GateAccept, SOCKET_BUFFER_SIZE, Bill, Protocol, TCP_HANDLE_MAP, Package, Event};
+use crate::net::shared::{Zip, Gate, GateListener, GateAccept, SOCKET_BUFFER_SIZE, Association, Protocol, TCP_HANDLE_MAP, Package, Event};
 use log::{error, debug};
 use crate::exception::{GlobalResult, TransError};
 use bytes::Bytes;
@@ -25,9 +25,9 @@ pub async fn listen(gate: Gate, tx: Sender<GateListener>) -> GlobalResult<()> {
 pub async fn accept(gate: Gate, tcp_listener: &TcpListener, accept_tx: Sender<GateAccept>, lone_output_tx: Sender<Zip>) -> GlobalResult<()> {
     let local_addr = gate.get_local_addr().clone();
     let gate_accept = check_accept(tcp_listener).await.map(|(tcp_stream, remote_addr)| {
-        let bill = Bill::new(local_addr, remote_addr, Protocol::TCP);
+        let association = Association::new(local_addr, remote_addr, Protocol::TCP);
         let map = TCP_HANDLE_MAP.clone();
-        map.insert(bill, lone_output_tx);
+        map.insert(association, lone_output_tx);
         GateAccept::accept_tcp(gate, remote_addr, tcp_stream)
     })
         .hand_log(|msg| error!("{:?} : TCP accept has failed too many times.{msg}",local_addr))?;
@@ -67,20 +67,20 @@ pub async fn read(mut reader: io::ReadHalf<TcpStream>, local_addr: SocketAddr, r
                             remote_addr,
                             len
                             );
-                    let bill = Bill::new(local_addr, remote_addr, Protocol::TCP);
-                    let zip = Zip::build_data(Package::new(bill, Bytes::copy_from_slice(&buf[..len])));
+                    let association = Association::new(local_addr, remote_addr, Protocol::TCP);
+                    let zip = Zip::build_data(Package::new(association, Bytes::copy_from_slice(&buf[..len])));
                     let _ = tx.send(zip).await.hand_log(|msg| error!("{msg}"));
                 } else {
                     debug!("【TCP connection disconnected】 【Local_addr = {:?}】 【Remote_addr = {:?}】",
                             local_addr,
                             remote_addr
                             );
-                    let bill = Bill::new(local_addr, remote_addr, Protocol::TCP);
+                    let association = Association::new(local_addr, remote_addr, Protocol::TCP);
 
                     //断开连接移除持有句柄
                     let map = TCP_HANDLE_MAP.clone();
-                    map.remove(&bill);
-                    let zip = Zip::build_event(Event::new(bill, 0u8));
+                    map.remove(&association);
+                    let zip = Zip::build_event(Event::new(association, 0u8));
                     let _ = tx.send(zip).await.hand_log(|msg| error!("{msg}"));
                     break;
                 }
@@ -104,8 +104,8 @@ pub async fn write(mut writer: io::WriteHalf<TcpStream>,mut rx: Receiver<Zip>) {
         match zip {
             Zip::Data(package) => {
                 let bytes = package.get_data();
-                let local_addr = package.get_bill().get_local_addr();
-                let remote_addr = package.get_bill().get_remote_addr();
+                let local_addr = package.get_association().get_local_addr();
+                let remote_addr = package.get_association().get_remote_addr();
                 match writer.write(&*bytes).await {
                     Ok(len) => {
                         debug!("【TCP write success】 【Local_addr = {:?}】 【Remote_addr = {:?}】 【len = {}】",
@@ -130,7 +130,7 @@ pub async fn write(mut writer: io::WriteHalf<TcpStream>,mut rx: Receiver<Zip>) {
             Zip::Event(event) => {
                 let _ = writer.shutdown();
                 let map = TCP_HANDLE_MAP.clone();
-                map.remove(event.get_bill());
+                map.remove(event.get_association());
             }
         }
     }
