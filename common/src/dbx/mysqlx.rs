@@ -8,10 +8,10 @@ use sqlx::mysql::MySqlSslMode;
 use sqlx::pool::PoolOptions;
 
 use cfg_lib::{conf};
-use exception::{GlobalError, GlobalResult, TransError};
+use exception::{GlobalError, GlobalResult};
 
 use crate::{logger, serde_default};
-use crate::utils::crypto::{default_decrypt, default_encrypt};
+use crate::utils::crypto::{default_decrypt};
 
 static MYSQL_POOL: OnceCell<Pool<MySql>> = OnceCell::new();
 
@@ -75,7 +75,7 @@ impl DbModel {
                 Some(4) => {
                     conn_options = conn_options.ssl_mode(MySqlSslMode::VerifyCa);
                 }
-                Some(other) => { panic!("连接无效加密等级") }
+                Some(other) => { panic!("连接无效加密等级:{other}") }
             }
             if let Some(ca) = attr.ssl_ca_crt_file {
                 conn_options = conn_options.ssl_ca(ca)
@@ -159,6 +159,8 @@ impl Default for PoolModel {
 
 #[cfg(test)]
 mod tests {
+    use serde::Serialize;
+    use constructor::{Get, New, Set};
     use super::*;
 
     #[test]
@@ -177,5 +179,43 @@ mod tests {
 
         let x = sqlx::query("select * from GMV_OAUTH").fetch_one(pool).await;
         println!("res = {:?}", x);
+    }
+
+
+    #[derive(
+        Default,
+        Debug,
+        Clone,
+        Serialize,
+        Deserialize,
+        PartialEq,
+        Eq,
+        Get,
+        Set,
+        New,
+        sqlx::FromRow
+    )]
+    struct GmvOauth {
+        device_id: String,
+        domain_id: String,
+        domain: String,
+        pwd: Option<String>,
+        //0-false,1-true
+        pwd_check: u8,
+        alias: Option<String>,
+        //0-停用,1-启用
+        status: u8,
+        heartbeat_sec: u16,
+    }
+
+    //cargo test --features mysqlx --package common --lib dbx::mysqlx::tests::read_gmv_oauth_by_device_id -- --exact --nocapture
+    #[tokio::test]
+    #[cfg(feature = "mysqlx")]
+    async fn read_gmv_oauth_by_device_id() {
+        init_conn_pool();
+        let pool = get_conn_by_pool().unwrap();
+        let res = sqlx::query_as::<_, GmvOauth>("select device_id,domain_id,domain,pwd,pwd_check,alias,status,heartbeat_sec from GMV_OAUTH where device_id=?")
+            .bind("34020000001110000002").fetch_optional(pool).await;
+        println!("{:?}", res);
     }
 }

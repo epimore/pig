@@ -12,7 +12,7 @@ db:
   mysql:
     host_or_ip: imysql
     port: 33061
-    db_name: idb_test
+    db_name: gmv
     user: epimore
     pass: clRXVjIzU1VrS3BEMXZmNxp5adMgQy599aQeu0tHYg0= #密码的密文
     attrs:

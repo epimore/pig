@@ -178,6 +178,7 @@ db:
     }
 
     #[derive(Debug, Deserialize)]
+    #[conf]
     pub struct DbModel
     {
         pub host_or_ip: String,
@@ -188,24 +189,6 @@ db:
         pub pass: Option<String>,
         pub connect_attrs:
             Option<HashMap<String, String>>,
-    }
-
-    impl Conf for DbModel
-    {
-        fn conf() -> Self
-        {
-            let yaml_content = std::fs::read_to_string("/home/ubuntu20/code/rs/mv/github/epimore/pig/common/config.yml").expect("Failed to read YAML file");
-            let yaml_value: serde_yaml::Value = serde_yaml::from_str(&yaml_content).expect("Failed to parse YAML");
-            let mut target_value = &yaml_value;
-            for key in "db.mysql".split('.')
-            {
-                if let serde_yaml::Value::Mapping(map) = target_value
-                {
-                    target_value = map.get(&Value::String(key.to_string())).expect("Specified prefix not found in YAML");
-                } else { panic!("Invalid YAML structure for the specified prefix"); }
-            }
-            serde_yaml::from_value(target_value.clone()).expect("Failed to map YAML value to struct")
-        }
     }
 
     #[test]

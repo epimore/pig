@@ -4,6 +4,10 @@ use ezsql::crud;
 use common::log::error;
 use common::err::TransError;
 
+
+
+
+
 #[derive(Default, Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Get, Set, New)]
 #[new(device_id, domain_id, domain)]
 #[crud(table_name = "GMV_OAUTH",
