@@ -12,7 +12,27 @@ use exception::{GlobalError, GlobalResult};
 
 use crate::{logger, serde_default};
 use crate::utils::crypto::{default_decrypt};
-
+/*
+Rust type	MySQL/MariaDB type(s)
+bool	TINYINT(1), BOOLEAN, BOOL (see below)
+i8	TINYINT
+i16	SMALLINT
+i32	INT
+i64	BIGINT
+u8	TINYINT UNSIGNED
+u16	SMALLINT UNSIGNED
+u32	INT UNSIGNED
+u64	BIGINT UNSIGNED
+f32	FLOAT
+f64	DOUBLE
+&str, String	VARCHAR, CHAR, TEXT
+&[u8], Vec<u8>	VARBINARY, BINARY, BLOB
+IpAddr	VARCHAR, TEXT
+Ipv4Addr	INET4 (MariaDB-only), VARCHAR, TEXT
+Ipv6Addr	INET6 (MariaDB-only), VARCHAR, TEXT
+MySqlTime	TIME (encode and decode full range)
+Duration	TIME (for decoding positive values only)
+*/
 static MYSQL_POOL: OnceCell<Pool<MySql>> = OnceCell::new();
 
 
