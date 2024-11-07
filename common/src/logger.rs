@@ -29,8 +29,7 @@ use crate::serde_default;
 ///       additivity: true #是否记录到全局日志文件中
 ///  ```
 #[derive(Debug, Deserialize)]
-#[conf(prefix = "log",
-    path = "/home/ubuntu20/code/rs/mv/github/epimore/pig/common/config.yml")]
+#[conf(prefix = "log")]
 pub struct Logger {
     #[serde(default)]
     store_path: PathBuf,

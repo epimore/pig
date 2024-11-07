@@ -49,10 +49,7 @@ pub fn get_conn_by_pool() -> GlobalResult<&'static Pool<MySql>> {
 }
 
 #[derive(Debug, Deserialize)]
-#[conf(
-    prefix = "db.mysql",
-    path = "/home/ubuntu20/code/rs/mv/github/epimore/pig/common/config.yml"
-)]
+#[conf(prefix = "db.mysql")]
 struct DbModel {
     host_or_ip: String,
     port: u16,
