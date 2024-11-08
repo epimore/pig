@@ -17,7 +17,7 @@ use crate::serde_default;
 ///   prefix: server #全局日志文件前缀; 可选：默认 app 指定生成日志文件添加日期后缀，如 server_2024-10-26.log
 ///   store_path: ./logs #日志文件根目录；可选 默认 当前目录
 ///   specify: #指定日志输出 可选，不指定日志
-///     - crate_name: test_log::a  #或者test_log用指全部  必选
+///     - crate_name: test_log::a,test_log::d  #或者test_log用指全部  必选
 ///       level: debug #日志等级 必选
 ///       file_name_prefix: a #日志文件前缀 可选 当未指定时，记录到全局日志文件中，等级由指定日志等级控制
 ///       additivity: false #是否记录到全局日志文件中 可选 默认false,全局日志文件会再次根据全局日志等级过滤记录
@@ -76,17 +76,16 @@ impl Logger {
         if let Some(specify) = &log.specify {
             for s in specify {
                 let module_level = level_filter(&s.level);
-                let target = s.crate_name.clone();
-
+                let targets: Vec<String> = s.crate_name.split(",").map(|str| str.trim().to_string()).collect();
                 // 根据 `additivity` 决定是否记录到默认日志
                 if !s.additivity.unwrap_or(false) {
-                    add_crate.push(target.clone());
+                    add_crate.extend(targets.clone());
                 }
 
                 // 为特定模块创建日志输出
                 let mut module_dispatch = Dispatch::new()
                     .level(module_level)
-                    .filter(move |metadata| metadata.target().starts_with(&target));
+                    .filter(move |metadata| targets.iter().any(|t| metadata.target().starts_with(t)));
 
                 // 如果指定了文件名前缀，则将日志输出到指定的文件
                 let prefix = s.file_name_prefix.as_deref().unwrap_or(&log.prefix);
