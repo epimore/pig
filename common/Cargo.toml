@@ -23,6 +23,9 @@ constructor = { path = "../macros/constructor" }
 cfg_lib = { path = "../macros/cfg_lib" }
 exception = { path = "../exception" }
 sqlx = { version = "0.8", features = ["mysql", "runtime-tokio-native-tls", "default","chrono"] }
+ctrlc = "3.4"
+daemonize = "0.5"
+users = "0.11"
 
 #加解密
 aes = "0.7.5"

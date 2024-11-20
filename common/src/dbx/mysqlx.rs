@@ -37,9 +37,13 @@ static MYSQL_POOL: OnceCell<Pool<MySql>> = OnceCell::new();
 
 
 #[cfg(feature = "mysqlx")]
-pub fn init_conn_pool() {
+pub fn init_conn_pool() -> GlobalResult<()> {
     let pool_conn = DbModel::build_pool_conn();
-    MYSQL_POOL.set(pool_conn).expect("Initializing mysql connection pool failed due to multiple settings");
+    MYSQL_POOL.set(pool_conn)
+        .map_err(|_|
+        GlobalError::new_sys_error("Initializing mysql connection pool failed due to multiple settings:{msg}",
+                                   |msg| error!("{msg}")))?;
+    Ok(())
 }
 
 #[cfg(feature = "mysqlx")]

@@ -115,6 +115,7 @@ impl Gate {
 pub enum GateListener {
     Tcp(Gate, TcpListener),
     Udp(Gate, UdpSocket),
+    All((Gate, TcpListener), (Gate, UdpSocket)),
 }
 
 impl GateListener {
@@ -123,6 +124,14 @@ impl GateListener {
     }
     pub fn build_udp(gate: Gate, udp_socket: UdpSocket) -> Self {
         Self::Udp(gate, udp_socket)
+    }
+    pub fn build_all(tg: GateListener, ug: GateListener) -> Self {
+        match (tg, ug) {
+            (GateListener::Tcp(t_gate, tcp_listener), GateListener::Udp(u_gate, udp_socket)) => {
+                Self::All((t_gate, tcp_listener), (u_gate, udp_socket))
+            }
+            _ => panic!("build_all requires a Tcp and Udp listener"),
+        }
     }
 }
 

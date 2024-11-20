@@ -1,4 +1,4 @@
-use std::net::SocketAddr;
+use std::net::{SocketAddr};
 use std::time::Duration;
 use tokio::sync::mpsc::{Receiver, Sender};
 use tokio::net::{TcpListener, TcpStream};
@@ -12,13 +12,19 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 //创建tcp监听，并将监听句柄（内含读写句柄）发送出去
 //卸载监听 drop listen？
-pub async fn listen(gate: Gate, tx: Sender<GateListener>) -> GlobalResult<()> {
+pub async fn listen(gate: Gate) -> GlobalResult<GateListener> {
     let local_addr = gate.get_local_addr().clone();
     let tcp_listener = TcpListener::bind(local_addr).await.hand_log(|msg| error!("{msg}"))?;
-    let gate_listener = GateListener::build_tcp(gate, tcp_listener);
-    tx.send(gate_listener).await.hand_log(|msg| error!("{msg}"))?;
     debug!("开始监听 TCP 地址： {}", local_addr);
-    Ok(())
+    let gate_listener = GateListener::build_tcp(gate, tcp_listener);
+    Ok(gate_listener)
+}
+pub fn listen_by_std(gate: Gate, std_tcp_listener: std::net::TcpListener) -> GlobalResult<GateListener> {
+    debug!("tokio监听 TCP 地址： {}", gate.get_local_addr());
+    std_tcp_listener.set_nonblocking(true).hand_log(|msg| error!("{msg}"))?;
+    let tcp_listener = TcpListener::from_std(std_tcp_listener).hand_log(|msg| error!("{msg}"))?;
+    let gate_listener = GateListener::build_tcp(gate, tcp_listener);
+    Ok(gate_listener)
 }
 
 //将连接句柄（内含读写句柄，远端地址等）发送出去

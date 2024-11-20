@@ -8,13 +8,19 @@ use bytes::Bytes;
 use tokio::io;
 
 //监听，将socket句柄发送出去
-pub async fn listen(gate: Gate, tx: Sender<GateListener>) -> GlobalResult<()> {
+pub async fn listen(gate: Gate) -> GlobalResult<GateListener> {
     let local_addr = gate.get_local_addr().clone();
     let socket = UdpSocket::bind(local_addr).await.hand_log(|msg| error!("{msg}"))?;
     let gate_listener = GateListener::build_udp(gate, socket);
-    tx.send(gate_listener).await.hand_log(|msg| error!("{msg}"))?;
     debug!("开始监听 UDP 地址： {}", local_addr);
-    Ok(())
+    Ok(gate_listener)
+}
+pub fn listen_by_std(gate: Gate,std_udp_socket:std::net::UdpSocket) -> GlobalResult<GateListener> {
+    debug!("tokio监听 UDP 地址： {}", gate.get_local_addr());
+    std_udp_socket.set_nonblocking(true).hand_log(|msg| error!("{msg}"))?;
+    let socket = UdpSocket::from_std(std_udp_socket).hand_log(|msg| error!("{msg}"))?;
+    let gate_listener = GateListener::build_udp(gate, socket);
+    Ok(gate_listener)
 }
 
 //将socket句柄包装发送出去
@@ -56,7 +62,7 @@ pub async fn read(local_addr: SocketAddr, udp_socket: &UdpSocket, tx: Sender<Zip
     }
 }
 
-pub async fn write(udp_socket: &UdpSocket,mut rx: Receiver<Zip>) {
+pub async fn write(udp_socket: &UdpSocket, mut rx: Receiver<Zip>) {
     while let Some(zip) = rx.recv().await {
         let _ = udp_socket.writable().await;
         match zip {

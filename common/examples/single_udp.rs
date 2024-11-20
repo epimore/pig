@@ -9,7 +9,6 @@ use common::net::state::Zip;
 //cmd: cargo run --example single_udp --features net
 #[tokio::main]
 async fn main() {
-    let _tripe = common::init();
     let (tx, mut rx) = net::init_net(net::state::Protocol::UDP, SocketAddr::from_str("0.0.0.0:18888").unwrap()).await.unwrap();
     let mut i = 0;
     while let Some(zip) = rx.recv().await {

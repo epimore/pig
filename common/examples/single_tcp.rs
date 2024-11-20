@@ -6,7 +6,6 @@ use common::net::state::Zip;
 //cmd: cargo run --example single_tcp --features net
 #[tokio::main]
 async fn main() {
-    let _tripe = common::init();
     let (tx, mut rx) = net::init_net(net::state::Protocol::TCP, SocketAddr::from_str("0.0.0.0:18888").unwrap()).await.unwrap();
     while let Some(zip) = rx.recv().await {
         match zip {

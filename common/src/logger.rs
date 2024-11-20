@@ -2,10 +2,11 @@ use std::path::PathBuf;
 
 use chrono::Local;
 use fern::Dispatch;
-use log::LevelFilter;
+use log::{error, LevelFilter};
 use serde::{Deserialize, Deserializer};
 
 use cfg_lib::{conf};
+use exception::{GlobalResult, TransError};
 use crate::serde_default;
 
 /// 通过配置文件控制日志格式化输出
@@ -17,7 +18,7 @@ use crate::serde_default;
 ///   prefix: server #全局日志文件前缀; 可选：默认 app 指定生成日志文件添加日期后缀，如 server_2024-10-26.log
 ///   store_path: ./logs #日志文件根目录；可选 默认 当前目录
 ///   specify: #指定日志输出 可选，不指定日志
-///     - crate_name: test_log::a,test_log::d  #或者test_log用指全部  必选
+///     - crate_name: test_log::a,test_log::d$  #或者test_log用指全部  必选 以$结束为全路径匹配，精准记录指定日志
 ///       level: debug #日志等级 必选
 ///       file_name_prefix: a #日志文件前缀 可选 当未指定时，记录到全局日志文件中，等级由指定日志等级控制
 ///       additivity: false #是否记录到全局日志文件中 可选 默认false,全局日志文件会再次根据全局日志等级过滤记录
@@ -54,12 +55,12 @@ pub struct Specify {
 
 
 impl Logger {
-    pub fn init() {
+    pub fn init() -> GlobalResult<()> {
         let mut log: Logger = Logger::conf();
         if !log.store_path.ends_with("/") { log.store_path.push("") };
         let default_level: LevelFilter = level_filter(&log.level);
         let path = std::path::Path::new(&log.store_path);
-        std::fs::create_dir_all(path).unwrap();
+        std::fs::create_dir_all(path).hand_log(|msg| error!("create log dir failed: {msg}"))?;
         let mut add_crate = Vec::new();
         let mut dispatch = Dispatch::new()
             .format(move |out, message, record| {
@@ -85,7 +86,13 @@ impl Logger {
                 // 为特定模块创建日志输出
                 let mut module_dispatch = Dispatch::new()
                     .level(module_level)
-                    .filter(move |metadata| targets.iter().any(|t| metadata.target().starts_with(t)));
+                    .filter(move |metadata| targets.iter().any(|t| {
+                        if t.ends_with("$") {
+                            metadata.target() == &t[..t.len() - 1]
+                        } else {
+                            metadata.target().starts_with(t)
+                        }
+                    }));
 
                 // 如果指定了文件名前缀，则将日志输出到指定的文件
                 let prefix = s.file_name_prefix.as_deref().unwrap_or(&log.prefix);
@@ -100,14 +107,21 @@ impl Logger {
         // 配置默认日志输出
         let default_dispatch = Dispatch::new()
             .level(default_level)
-            .filter(move |metadata| !add_crate.iter().any(|t| metadata.target().starts_with(t)))
+            .filter(move |metadata| !add_crate.iter().any(|t| {
+                if t.ends_with("$") {
+                    metadata.target() == &t[..t.len() - 1]
+                } else {
+                    metadata.target().starts_with(t)
+                }
+            }))
             .chain(std::io::stdout())
             .chain(fern::DateBased::new(&log.store_path, format!("{}_{}.log", log.prefix, "%Y-%m-%d".to_string())));
 
         dispatch
             .chain(default_dispatch)
             .apply()
-            .expect("Logger initialization failed");
+            .hand_log(|msg| error!("Logger initialization failed: {msg}"))?;
+        Ok(())
     }
 }
 
