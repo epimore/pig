@@ -171,11 +171,11 @@ pub fn run<D, T>()
 where
     D: Daemon<T>,
 {
-    let arg_matches = cfg_lib::cache::get_arg_match();
+    let arg_matches = cfg_lib::conf::get_arg_match();
     match arg_matches.subcommand() {
         Some(("start", args)) => {
             let config_path = args.try_get_one::<String>("config").expect("get config failed").expect("not found config").to_string();
-            cfg_lib::cache::init_cfg(config_path);
+            cfg_lib::conf::init_cfg(config_path);
             start_service::<D, T>();
         }
         Some(("stop", _)) => {
@@ -183,7 +183,7 @@ where
         }
         Some(("restart", args)) => {
             let config_path = args.try_get_one::<String>("config").expect("get config failed").expect("not found config").to_string();
-            cfg_lib::cache::init_cfg(config_path);
+            cfg_lib::conf::init_cfg(config_path);
             restart_service::<D, T>();
         }
         _other => {

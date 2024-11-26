@@ -4,7 +4,7 @@ use tokio::sync::mpsc::{Receiver, Sender};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::{io, time};
 use crate::net::state::{Zip, Gate, GateListener, GateAccept, SOCKET_BUFFER_SIZE, Association, Protocol, TCP_HANDLE_MAP, Package, Event};
-use log::{error, debug};
+use log::{error, debug, info};
 use crate::exception::{GlobalResult, TransError};
 use bytes::Bytes;
 use std::io::Error;
@@ -95,7 +95,7 @@ pub async fn read(mut reader: io::ReadHalf<TcpStream>, local_addr: SocketAddr, r
                 continue;
             }
             Err(err) => {
-                error!("【TCP read failure】 【Local_addr = {}】 【err = {:?}】",
+                info!("【TCP read failure】 【Local_addr = {}】 【err = {:?}】",
                             local_addr.to_string(),
                             err,
                             );
