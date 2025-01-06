@@ -72,6 +72,7 @@ impl DbModel {
             .host(&*model.host_or_ip)
             .port(model.port)
             .database(&*model.db_name)
+            .pipes_as_concat(false)
             .username(&*model.user)
             .password(&*default_decrypt(&*model.pass).expect("mysql pass invalid"));
         if let Some(attr) = model.attrs {

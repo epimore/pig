@@ -39,7 +39,7 @@ fn send_terminate_signal(pid: i32) -> Result<(), std::io::Error> {
         .status()
         .map(|status| {
             if !status.success() {
-                Err(std::io::Error::new(std::io::ErrorKind::Other, "Failed to send TERM signal:Service maybe down"))
+                Err(std::io::Error::new(std::io::ErrorKind::Other, "Failed to send TERM signal\nThe service may be down."))
             } else {
                 Ok(())
             }
